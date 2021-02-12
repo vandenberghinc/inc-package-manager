@@ -1,0 +1,6 @@
+cl1==0.2.5
+netw0rk==0.2.4
+r3sponse==0.8.0
+syst3m==0.8.7
+fil3s==0.8.8
+selenium
