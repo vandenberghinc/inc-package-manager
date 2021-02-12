@@ -5,7 +5,6 @@
 import os, sys, syst3m
 
 # settings.
-SOURCE_NAME = "package_manager"
 SOURCE_PATH = syst3m.defaults.get_source_path(__file__, back=1)
 BASE = syst3m.defaults.get_source_path(SOURCE_PATH)
 sys.path.insert(1, BASE)

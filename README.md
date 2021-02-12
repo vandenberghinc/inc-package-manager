@@ -31,25 +31,25 @@ Manage the packages through the python api.
 ```python
 
 # import the package.
-from package_manager import package_manager
+from inc_package_manager import inc_package_manager
 
 # configure your api key.
-package_manager.api_key = "your-api-key"
+inc_package_manager.api_key = "your-api-key"
 
 # installing packages.
-response = package_manager.install("nas-server")
+response = inc_package_manager.install("nas-server")
 
 # uninstalling packages.
-response = package_manager.uninstall("nas-server")
+response = inc_package_manager.uninstall("nas-server")
 
 # updating packages.
-response = package_manager.update("nas-server")
+response = inc_package_manager.update("nas-server")
 
 # retrieve the installed version.
-response = package_manager.version("nas-server")
+response = inc_package_manager.version("nas-server")
 
 # retrieve the remote version.
-response = package_manager.version("nas-server", remote=True)
+response = inc_package_manager.version("nas-server", remote=True)
 
 # handling the response.
 if response.success: 
