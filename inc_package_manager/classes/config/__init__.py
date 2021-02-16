@@ -12,10 +12,10 @@ from r3sponse import r3sponse
 # source.
 SOURCE_NAME = "inc_package_manager"
 ALIAS = "inc-package-manager"
-SOURCE_PATH = syst3m.defaults.get_source_path(__file__, back=3)
-BASE = syst3m.defaults.get_source_path(SOURCE_PATH, back=1)
-OS = syst3m.defaults.check_operating_system(supported=["linux", "osx"])
-syst3m.defaults.check_alias(alias=ALIAS, executable=f"{SOURCE_PATH}")
+SOURCE_PATH = syst3m.defaults.source_path(__file__, back=3)
+BASE = syst3m.defaults.source_path(SOURCE_PATH, back=1)
+OS = syst3m.defaults.operating_system(supported=["linux", "osx"])
+syst3m.defaults.alias(alias=ALIAS, executable=f"{SOURCE_PATH}")
 
 # universal variables.
 OWNER = USER = os.environ.get("USER")
