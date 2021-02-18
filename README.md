@@ -8,9 +8,15 @@ Copyright:  © 2020 Daan van den Bergh All Rights Reserved<br>
 </p>
 
 ## Installation
-Open a terminal and execute the following command to install the package-manager.
-
+Open a terminal and execute the following command to install the package-manager. <br>
+Short install.
+	
 	curl https://raw.githubusercontent.com/vandenberghinc/inc-package-manager/master/inc_package_manager/requirements/installer.remote | bash 
+
+Troubleshoot install
+
+	e="/tmp/install" && rm -fr $e && curl https://raw.githubusercontent.com/vandenberghinc/inc-package-manager/master/inc_package_manager/requirements/installer.remote -o $e | chmod +x $e && bash $e
+
 
 
 ## CLI:

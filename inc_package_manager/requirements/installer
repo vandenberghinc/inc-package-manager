@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# import devos library.
+#curl https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import | bash 
+rm -fr /tmp/import && curl https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import -o /tmp/import && chmod +x /tmp/import && bash /tmp/import
+
 # the alias.
 alias="inc-package-manager"
 
@@ -30,12 +34,13 @@ lib="/usr/local/lib/$source_name/"
 # create an database directory (leave "" to ignore).
 database="/etc/$source_name/" 
 
-# import devos library.
-curl https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import | bash 
+# defaults.
+source=$(source-path $(requirements-path $0))
 
 # execute packge installer.
 install-package \
     --alias $alias \
+    --source $source \
     --source-name $source_name \
     --pypi-name $pypi_name \
     --pypi-package $pypi_package \
