@@ -74,8 +74,7 @@ function get_argument() {
 }
 
 # check etc dir.
-alias="package-manager"
-version="v1"
+alias="inc-package-manager"
 package="/usr/local/lib/$alias/"
 database="/etc/$alias/"
 pypi_package="true"
@@ -85,27 +84,15 @@ pypi_package_name="package_manager"
 osinfo
 requirements_dir=$(dirname "$0")
 current_installation=${requirements_dir///requirements/}
-current_installation=${current_installation///$version/}"/" 
 if [[ "$pypi_package" == "true" ]] ; then
     current_installation=${current_installation///$pypi_package_name/}"/" 
 fi
-if [[ "$pypi_package" == "false" ]] ; then
-    if [[ ! "$requirements_dir" =~ "/$version/requirements" ]] ; then
-        echo "Error: Invalid installer path $requirements_dir. The installer requires to be located at: /path/to/source/$version/requirements/installer. Source path: $current_installation"
-        exit 1
-    fi
-else 
-    if [[ ! "$requirements_dir" =~ "/$pypi_package_name/$version/requirements" ]] ; then
-        echo "Error: Invalid installer path $requirements_dir. The installer requires to be located at: /path/to/source/$pypi_package_name/$version/requirements/installer. Current requirements path: $requirements_dir"
-        exit 1
-    fi
-fi
-if [[ "$alias" == "" ]] ; then
-    echo "Error: Specify the alias variable in installer script: $current_installation/$version/requirements/installer."
+if [[ ! "$requirements_dir" =~ "/$pypi_package_name//requirements" ]] ; then
+    echo "Error: Invalid installer path $requirements_dir. The installer requires to be located at: /path/to/source/$pypi_package_name/requirements/installer. Current requirements path: $requirements_dir"
     exit 1
 fi
-if [[ "$version" == "" ]] ; then
-    echo "Error: Specify the version variable in installer script: $current_installation/$version/requirements/installer."
+if [[ "$alias" == "" ]] ; then
+    echo "Error: Specify the alias variable in installer script: $current_installation//requirements/installer."
     exit 1
 fi
 if [ $(get_argument "--user" $@) != "none" ] ; then
@@ -184,7 +171,7 @@ fi
 
 # install alias.
 if [[ "$pypi_package" == "false" ]] ; then
-    python3 $package/$version --create-alias $alias --sudo
+    python3 $package --create-alias $alias --sudo
 fi
 
 # install pypi package.
