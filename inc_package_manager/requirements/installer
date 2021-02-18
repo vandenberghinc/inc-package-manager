@@ -7,7 +7,7 @@ function osinfo() {
         os="linux"
         group="root"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        os="osx"
+        os="macos"
         group="wheel"
     elif [[ "$OSTYPE" == "cygwin" ]]; then
        os="posix"     # POSIX compatibility layer and Linux environment emulation for Windows
@@ -26,6 +26,13 @@ function osinfo() {
         group="root"
     fi
     #echo "Operating system: "$os
+}
+function command-exists() {
+    if ! command -v "$1" &> /dev/null ; then
+        echo "false"
+    else
+        echo "true"
+    fi
 }
 function argument_present() {
     c=0
@@ -67,7 +74,7 @@ package="/usr/local/lib/$alias/"
 database="/etc/$alias/"
 pypi_package="true"
 create_alias="true"
-pypi_package_name="package_manager"
+pypi_package_name="inc_package_manager"
 
 # defaults.
 osinfo
@@ -76,12 +83,12 @@ current_installation=${requirements_dir///requirements/}
 if [[ "$pypi_package" == "true" ]] ; then
     current_installation=${current_installation///$pypi_package_name/}"/" 
 fi
-if [[ ! "$requirements_dir" =~ "/$pypi_package_name//requirements" ]] ; then
+if [[ ! "$requirements_dir" =~ "/$pypi_package_name/requirements" ]] ; then
     echo "Error: Invalid installer path $requirements_dir. The installer requires to be located at: /path/to/source/$pypi_package_name/requirements/installer. Current requirements path: $requirements_dir"
     exit 1
 fi
 if [[ "$alias" == "" ]] ; then
-    echo "Error: Specify the alias variable in installer script: $current_installation//requirements/installer."
+    echo "Error: Specify the alias variable in installer script: $current_installation/requirements/installer."
     exit 1
 fi
 if [ $(get_argument "--user" $@) != "none" ] ; then
@@ -112,21 +119,19 @@ if [ "$database" != "" ] && [ ! -d "$database" ]; then
 fi
 
 # install dependencies.
-# osx.
+# macos.
 
-if [ "$os" == "osx" ]; then
+if [ "$os" == "macos" ]; then
 
     #    -    check HomeBrew:
-    existance=$(command -v /usr/local/bin/brew)
-    if [ "$existance" != "/usr/local/bin/brew" ] ; then
+    if [ "$(command-exists 'brew')" == "false" ] ; then
         echo "HomeBrew is not installed."
         echo "Installing HomeBrew..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" && brew doctor
     fi
 
     # python.
-    existance=$(command -v /usr/local/bin/python3)
-    if [ "$existance" != "/usr/local/bin/python3" ] ; then
+    if [ "$(command-exists 'python3')" == "false" ] ; then
         brew install python3
     fi
 
@@ -139,11 +144,15 @@ elif [ "$os" == "linux" ]; then
     sudo apt-get -y upgrade
 
     # network.
-    sudo apt-get -y install net-tools
+    if [ "$(command-exists 'ifconfig')" == "false" ] ; then
+        sudo apt-get -y install net-tools
+    fi
 
     # python:
-    sudo apt-get -y upgrade python3
-    sudo apt-get -y install libjpeg-dev zlib1g-dev build-essential cmake pkg-config libx11-dev libatlas-base-dev libgtk-3-dev libboost-python-dev python-dev python3-dev python3-pip python3-venv python3-setuptools python3-pip openssh-client openssh-server
+    if [ "$(command-exists 'python3')" == "false" ] ; then
+        sudo apt-get -y upgrade python3
+        sudo apt-get -y install libjpeg-dev zlib1g-dev build-essential cmake pkg-config libx11-dev libatlas-base-dev libgtk-3-dev libboost-python-dev python-dev python3-dev python3-pip python3-venv python3-setuptools python3-pip openssh-client openssh-server
+    fi
 
 # invalid.
 else
