@@ -27,18 +27,6 @@ function osinfo() {
     fi
     #echo "Operating system: "$os
 }
-function log() {
-    if [ "$2" == "done" ]; then
-        echo "$1 ... done"
-        echo ""
-    elif [ "$2" == "failed" ]; then
-        echo "$1 ... failed"
-    elif [ "$2" == "error" ]; then
-        echo "$1 ... failed"
-    else
-        echo "$1 ..."
-    fi
-}
 function argument_present() {
     c=0
     success="false"
@@ -73,11 +61,12 @@ function get_argument() {
     echo $value
 }
 
-# check etc dir.
+# settings.
 alias="inc-package-manager"
 package="/usr/local/lib/$alias/"
 database="/etc/$alias/"
 pypi_package="true"
+create_alias="true"
 pypi_package_name="package_manager"
 
 # defaults.
@@ -100,7 +89,7 @@ if [ $(get_argument "--user" $@) != "none" ] ; then
 fi
 
 # install source code.
-if [[ "$pypi_package" == "false" ]] ; then
+if [[ "$package" != "" ]] ; then
     if [[ "$current_installation" != "$package" ]] ; then
         sudo rm -fr $package
         sudo mkdir $package
@@ -169,17 +158,14 @@ if [[ -f "$file" ]] ; then
     pip3 install -r $file 2> /dev/null # prevent the possible upgrade pip error.
 fi
 
-# install alias.
-if [[ "$pypi_package" == "false" ]] ; then
-    python3 $package --create-alias $alias --sudo
-fi
-
 # install pypi package.
 if [[ "$pypi_package" == "true" ]] ; then
-    cd $current_installation
-    pip3 install . 2> /dev/null
-    cd ~
-    python3 -c "import $pypi_package_name" --create-alias $alias --sudo
+    pip3 install $current_installation 2> /dev/null
+fi
+
+# install alias.
+if [[ "$create_alias" == "false" ]] ; then
+    python3 $package --create-alias $alias --sudo
 fi
 
 # regular log for confirmation:
