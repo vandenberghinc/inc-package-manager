@@ -70,13 +70,17 @@ function get_argument() {
 
 # settings.
 alias="inc-package-manager"
-package="/usr/local/lib/$alias/"
-database="/etc/$alias/"
-pypi_package="true"
-create_alias="true"
 pypi_package_name="inc_package_manager"
 
-# defaults.
+# boolean settings.
+pypi_package="true"
+create_alias="true"
+
+# libs.
+package="/usr/local/lib/$alias/"
+database="/etc/$alias/"
+
+# defaults (do not edit).
 osinfo
 requirements_dir=$(dirname "$0")
 current_installation=${requirements_dir///requirements/}
@@ -161,7 +165,7 @@ else
 fi
 
 # python requirements:
-file=$requirements_dir"/requirements.txt"
+file=$requirements_dir"/requirements.pip"
 if [[ -f "$file" ]] ; then
     echo "Installing PIP requirements..."
     pip3 install -r $file 2> /dev/null # prevent the possible upgrade pip error.
@@ -173,7 +177,7 @@ if [[ "$pypi_package" == "true" ]] ; then
 fi
 
 # install alias.
-if [[ "$create_alias" == "false" ]] ; then
+if [[ "$create_alias" == "true" ]] ; then
     python3 $package --create-alias $alias --sudo
 fi
 
