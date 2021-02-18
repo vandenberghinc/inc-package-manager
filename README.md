@@ -10,7 +10,8 @@ Copyright:  © 2020 Daan van den Bergh All Rights Reserved<br>
 ## Installation
 Open a terminal and execute the following command to install the package-manager.
 
-	pip3 install vandenberghinc-package-manager --upgrade && python3 -c "import package_manager" --create-alias package-manager
+	curl https://raw.githubusercontent.com/vandenberghinc/inc-package-manager/master/inc_package_manager/requirements/installer.remote | bash 
+
 
 ## CLI:
 	Usage: package-manager <mode> <options> 
