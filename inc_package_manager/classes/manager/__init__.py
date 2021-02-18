@@ -48,7 +48,7 @@ class PackageManager(object):
 					file_path.delete(forced=True, sudo=True)
 					if log_level >= 0: loader.release()
 		else:
-			file_path = Formats.FilePath(f"/tmp/{package}.tmp/")
+			file_path = Formats.FilePath(f"/tmp/{package}/")
 
 		# init zip.
 		zip = Files.Zip(f"/tmp/{package}.zip")
