@@ -126,7 +126,9 @@ class PackageManager(object):
 			if log_level >= 0: loader.release()
 			command = f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = syst3m.utils.__execute_script__(command)
-			output = syst3m.console.execute(command)
+			response = syst3m.console.execute(command)
+			if not response.success: return response
+			output = response.output
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
 				if log_level >= 1: print(output)
