@@ -53,7 +53,7 @@ class PackageManager(object):
 		# init zip.
 		zip = Files.Zip(f"/tmp/{package}.zip")
 		os.system(f"rm -fr /tmp/{package}.extract/")
-		os.system(f"rm -fr /tmp/{package}.tmp/")
+		os.system(f"rm -fr /tmp/{package}/")
 		os.system(f"rm -fr /tmp/{package}.zip")
 
 		# make request.
@@ -103,18 +103,18 @@ class PackageManager(object):
 		if len(paths) == 0:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}.tmp/")
+			os.system(f"rm -fr /tmp/{package}/")
 			return r3sponse.error_response(f"Failed to install package [{package}], found no packages while extracting.", log_level=log_level)
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}.tmp/")
+			os.system(f"rm -fr /tmp/{package}/")
 			return r3sponse.error_response(f"Failed to install package [{package}], found multiple packages while extracting.", log_level=log_level)
 		os.system(f"mv {paths[0]} {file_path.path}")
 		if not file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}.tmp/")
+			os.system(f"rm -fr /tmp/{package}/")
 			return r3sponse.error_response(f"Failed to install package [{package}], failed to write out {file_path.path}.", log_level=log_level)
 
 		# post installation.
@@ -129,24 +129,24 @@ class PackageManager(object):
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
 				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}.tmp/")
+				os.system(f"rm -fr /tmp/{package}/")
 				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}.tmp/")
+				os.system(f"rm -fr /tmp/{package}/")
 				return r3sponse.error_response(f"Failed to install package [{package}], failed to run the post installation script output: \n{output}.", log_level=log_level)
 		else:
 			os.system(f"mv {file_path.path} {library}")
 			if file_path.exists():
 				if log_level >= 0: loader.stop()
 				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}.tmp/")
+				os.system(f"rm -fr /tmp/{package}/")
 				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}.tmp/")
+				os.system(f"rm -fr /tmp/{package}/")
 				return r3sponse.error_response(f"Failed to install package [{package}], failed to move the library to {library}.", log_level=log_level)
 
 		#

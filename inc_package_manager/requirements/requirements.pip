@@ -1,11 +1,10 @@
 
 # pip requirements.
-selenium
 
 # inc requirements.
 cl1==1.4.6
 netw0rk==1.1.5
 r3sponse==1.4.1
-syst3m==2.0.0
+syst3m==2.0.2
 fil3s==1.8.3
 
