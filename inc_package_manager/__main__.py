@@ -32,7 +32,6 @@ class CLI(cl1.CLI):
 	def start(self):
 
 		# check arguments.
-		JSON = False
 		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version"], json=JSON)
 
 		# help.
@@ -40,8 +39,8 @@ class CLI(cl1.CLI):
 			self.docs(success=True, json=JSON)
 
 		# version.
-		elif self.arguments.present(['--version']):
-			print(f"{ALIAS} version:",Files.load(f"{SOURCE_PATH}/.version").replace("\n",""))
+		#elif self.arguments.present(['--version']):
+		#	print(f"{ALIAS} version:",Files.load(f"{SOURCE_PATH}/.version").replace("\n",""))
 
 		# config.
 		elif self.arguments.present('--config'):
