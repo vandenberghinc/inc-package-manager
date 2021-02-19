@@ -17,7 +17,7 @@ class PackageManager(object):
 		except: 
 			self.configuration = None
 			self.api_key = None
-	def install(self, package, post_install_args="", log_level=0):
+	def install(self, package, post_install_args="", log_level=LOG_LEVEL):
 		
 		# loader.
 		if log_level >= 0: loader = syst3m.console.Loader(f"Checking package {package}")
@@ -127,6 +127,7 @@ class PackageManager(object):
 			output = syst3m.utils.__execute_script__(f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}")
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
+				if log_level >= 1: print(output)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
 				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
@@ -149,7 +150,7 @@ class PackageManager(object):
 				return r3sponse.error_response(f"Failed to install package [{package}], failed to move the library to {library}.", log_level=log_level)
 
 		#
-	def uninstall(self, package, log_level=0):
+	def uninstall(self, package, log_level=LOG_LEVEL):
 
 		# loader.
 		if log_level >= 0: loader = syst3m.console.Loader(f"Uninstalling package {package}")
@@ -178,7 +179,7 @@ class PackageManager(object):
 		return r3sponse.success_response(f"Successfully uninstalled package [{package}].", log_level=log_level)
 
 		#
-	def update(self, package="all", post_install_args="", log_level=0):
+	def update(self, package="all", post_install_args="", log_level=LOG_LEVEL):
 		# update all recursive.
 		if package == "all":
 			c = 0
@@ -254,7 +255,7 @@ class PackageManager(object):
 			"current_version":response.version,
 			"remote_version":remote_version,
 		})
-
+	#
 	# system functions.
 	def __request__(self, url="/", data={}, json=True):
 		def clean_url(url, strip_first=True, strip_last=True, remove_double_slash=True):

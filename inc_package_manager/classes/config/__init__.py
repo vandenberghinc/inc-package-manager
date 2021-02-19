@@ -17,6 +17,10 @@ BASE = syst3m.defaults.source_path(SOURCE_PATH, back=1)
 OS = syst3m.defaults.operating_system(supported=["linux", "macos"])
 syst3m.defaults.alias(alias=ALIAS, executable=f"{SOURCE_PATH}")
 
+# options.
+LOG_LEVEL = syst3m.defaults.log_level(default=0)
+JSON = cl1.arguments_present(["-j", "--json"])
+
 # universal variables.
 OWNER = USER = os.environ.get("USER")
 GROUP = "root"
