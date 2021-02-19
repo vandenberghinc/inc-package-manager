@@ -19,20 +19,26 @@ pypi_package="true"
 # boolean indicating whether to create a syst3m alias.
 create_alias="true"
 
-# pip requirements file (subpath) (leave "" to ignore).
+# pip requirements file (subpath) (leave "none" to ignore).
 pip_requirements="/requirements/requirements.pip"
 
-# apt requirements file (subpath) (leave "" to ignore).
+# apt requirements file (subpath) (leave "none" to ignore).
 apt_requirements="/requirements/requirements.apt"
 
-# brew requirements file (subpath) (leave "" to ignore).
+# brew requirements file (subpath) (leave "none" to ignore).
 brew_requirements="/requirements/requirements.brew"
 
-# install the source code to a lib path (leave "" to ignore).
+# install the source code to a lib path (leave "none" to ignore).
 lib="/usr/local/lib/$alias/" 
 
-# create an database directory (leave "" to ignore).
+# create an database directory (leave "none" to ignore).
 database="/etc/$alias/" 
+
+# create an database directory (leave "none" to ignore).
+venv="none" 
+
+# the supported operating systems.
+supported_os="linux,macos"
 
 # defaults.
 source=$(source-path $(requirements-path $0))
@@ -50,5 +56,7 @@ install-package \
     --brew-requirements $brew_requirements \
     --lib $lib \
     --database $database \
+    --venv $venv \
+    --supported-os $supported_os
     $@ \
 
