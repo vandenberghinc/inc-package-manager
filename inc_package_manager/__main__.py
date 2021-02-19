@@ -31,12 +31,17 @@ class CLI(cl1.CLI):
 		#
 	def start(self):
 
-		# check args.
-		self.arguments.check()
-		
+		# check arguments.
+		JSON = False
+		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version"], json=JSON)
+
 		# help.
 		if self.arguments.present(['-h', '--help']):
-			print(self.documentation)
+			self.docs(success=True, json=JSON)
+
+		# version.
+		elif self.arguments.present(['--version']):
+			print(f"{ALIAS} version:",Files.load(f"{SOURCE_PATH}/.version").replace("\n",""))
 
 		# config.
 		elif self.arguments.present('--config'):
