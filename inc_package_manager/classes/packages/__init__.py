@@ -124,7 +124,9 @@ class PackageManager(object):
 			if log_level >= 0: loader.hold()
 			os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			if log_level >= 0: loader.release()
-			output = syst3m.utils.__execute_script__(f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}")
+			command = f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
+			#output = syst3m.utils.__execute_script__(command)
+			output = syst3m.console.execute(command)
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
 				if log_level >= 1: print(output)
