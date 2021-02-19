@@ -17,6 +17,7 @@ class CLI(cl1.CLI):
 				"--uninstall package-name":"Uninstall a package.",
 				"--update [optional: package-name]":"Update all packages, optionally specify one package to update.",
 				"--version packge-name [optional: --remote]":"Retrieve the installed / remote version of a package.",
+				"--requirements packge-name [optional: --remote]":"Retrieve the installed / remote version of a package in requirements format.",
 				"--config":"Configure the package-manager.",
 				"   --api-key your-api-key":"Specify your vandenberghinc api key.",
 				"-h / --help":"Show the documentation.",
@@ -67,17 +68,24 @@ class CLI(cl1.CLI):
 				self.stop(message="Aborted.")
 			self.stop(response=package_manager.uninstall(package), json=JSON)
 
-		# install a package.
+		# update a package.
 		elif self.arguments.present('--update'):
 			package = self.arguments.get('--update', required=False, json=JSON)
 			if package == None: package = "all"
 			self.stop(response=package_manager.update(package), json=JSON)
 
-		# install a package.
-		elif self.arguments.present('--version'):
+		# get the version of a package.
+		elif self.arguments.present(['--version', "--requirements"]):
 			package = self.arguments.get('--version', json=JSON)
 			remote = self.arguments.present("--remote")
-			self.stop(response=package_manager.version(package, remote=remote), json=JSON)
+			response = package_manager.version(package)
+			if not response["success"]:
+				self.stop(response=response, json=JSON)
+			else:
+				if self.arguments.present(["--requirements"]):
+					self.stop(message=f"{package} version:",response.version, json=JSON)
+				else:
+					self.stop(message=f"{package} version:",response.version, json=JSON)
 
 		# invalid.
 		else: self.invalid(json=JSON)
