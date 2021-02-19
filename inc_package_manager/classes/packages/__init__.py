@@ -121,13 +121,17 @@ class PackageManager(object):
 			if log_level >= 0: loader.mark(new_message=f"Executing post installation script of package {package}")
 			os.system(f'chmod +x {tmp_dir.file_path.path}{post_install}')
 			print(f"{syst3m.color.orange}Root permission{syst3m.color.end} required to install package {package}.")
-			if log_level >= 0: loader.hold()
-			os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
-			if log_level >= 0: loader.release()
+			#if log_level >= 0: loader.hold()
+			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
+			#if log_level >= 0: loader.release()
 			command = f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = syst3m.utils.__execute_script__(command)
 			response = syst3m.console.execute(command)
-			if not response.success: return response
+			if not response.success: 
+				if log_level >= 0: loader.stop(success=False)
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
+				return response
 			output = response.output
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
