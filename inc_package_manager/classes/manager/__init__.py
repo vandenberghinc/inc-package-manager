@@ -39,22 +39,22 @@ class PackageManager(object):
 
 		# install package.
 		if post_install in [None, False, ""]:
-			file_path = Formats.FilePath(self.packages[package]["library"])
-			if file_path.exists():
-				try: os.remove(file_path.path)
+			fp = Formats.FilePath(self.packages[package]["library"])
+			if fp.exists():
+				try: os.remove(fp.path)
 				except PermissionError: 
 					print(f"{syst3m.color.orange}Root permission{syst3m.color.end} required to reinstall package {package}.")
 					if log_level >= 0: loader.hold()
-					file_path.delete(forced=True, sudo=True)
+					fp.delete(forced=True, sudo=True)
 					if log_level >= 0: loader.release()
-		else:
-			file_path = Formats.FilePath(f"/tmp/{package}/")
 
 		# init zip.
 		zip = Files.Zip(f"/tmp/{package}.zip")
-		os.system(f"rm -fr /tmp/{package}.extract/")
+		extract_dir = Files.Directory(path=f"/tmp/{package}.extract/")
+		extract_dir.fp.delete(forced=True)
+		zip.fp.delete(forced=True)
 		os.system(f"rm -fr /tmp/{package}/")
-		os.system(f"rm -fr /tmp/{package}.zip")
+		tmp_dir = Files.Directory(path=f"/tmp/{package}/")
 
 		# make request.
 		if log_level >= 0: loader.mark(new_message=f"Downloading package {package}")
@@ -97,56 +97,55 @@ class PackageManager(object):
 
 		# extract.
 		if log_level >= 0: loader.mark(new_message=f"Extracting package {package}")
-		extract_dir = Files.Directory(path=f"/tmp/{package}.{Formats.String('').generate(length=12, digits=True, capitalize=True)}.extract/")
 		zip.extract(base=extract_dir.file_path.path)
-		paths = extract_dir.paths()
+		paths = extract_dir.paths(recursive=False)
 		if len(paths) == 0:
 			if log_level >= 0: loader.stop(success=False)
-			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}/")
+			extract_dir.fp.delete(forced=True)
+			tmp_dir.fp.delete(forced=True)
 			return r3sponse.error_response(f"Failed to install package [{package}], found no packages while extracting.", log_level=log_level)
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
-			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}/")
+			extract_dir.fp.delete(forced=True)
+			tmp_dir.fp.delete(forced=True)
 			return r3sponse.error_response(f"Failed to install package [{package}], found multiple packages while extracting.", log_level=log_level)
-		os.system(f"mv {paths[0]} {file_path.path}")
-		if not file_path.exists():
+		os.system(f"mv {paths[0]} {tmp_dir.file_path.path}")
+		if not tmp_dir.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
-			extract_dir.delete(forced=True)
-			os.system(f"rm -fr /tmp/{package}/")
-			return r3sponse.error_response(f"Failed to install package [{package}], failed to write out {file_path.path}.", log_level=log_level)
+			extract_dir.fp.delete(forced=True)
+			tmp_dir.fp.delete(forced=True)
+			return r3sponse.error_response(f"Failed to install package [{package}], failed to write out {tmp_dir.file_path.path}.", log_level=log_level)
 
 		# post installation.
 		if post_install not in [None, False, ""]:
 			if log_level >= 0: loader.mark(new_message=f"Executing post installation script of package {package}")
-			os.system(f'chmod +x {file_path.path}{post_install}')
+			os.system(f'chmod +x {tmp_dir.file_path.path}{post_install}')
 			print(f"{syst3m.color.orange}Root permission{syst3m.color.end} required to install package {package}.")
 			if log_level >= 0: loader.hold()
 			os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			if log_level >= 0: loader.release()
-			output = syst3m.utils.__execute_script__(f"sudo -u {USER} bash {file_path.path}{post_install} {post_install_args}")
+			output = syst3m.utils.__execute_script__(f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}")
 			if "Successfully installed " in output:
 				if log_level >= 0: loader.stop()
-				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}/")
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
 				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
-				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}/")
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
 				return r3sponse.error_response(f"Failed to install package [{package}], failed to run the post installation script output: \n{output}.", log_level=log_level)
 		else:
-			os.system(f"mv {file_path.path} {library}")
-			if file_path.exists():
+			os.system(f"mv {tmp_dir.file_path.path} {library}")
+			if tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop()
-				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}/")
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
 				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
-				extract_dir.delete(forced=True)
-				os.system(f"rm -fr /tmp/{package}/")
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
 				return r3sponse.error_response(f"Failed to install package [{package}], failed to move the library to {library}.", log_level=log_level)
 
 		#
