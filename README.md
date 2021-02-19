@@ -1,4 +1,4 @@
-# Package-Manager
+# Inc-Package-Manager
 Author(s):  Daan van den Bergh<br>
 Copyright:  © 2020 Daan van den Bergh All Rights Reserved<br>
 <br>
@@ -15,9 +15,7 @@ Short install.
 
 Troubleshoot install
 
-	e="/tmp/install" && rm -fr $e && curl https://raw.githubusercontent.com/vandenberghinc/inc-package-manager/master/inc_package_manager/requirements/installer.remote -o $e | chmod +x $e && bash $e
-
-
+	export e="/tmp/install" && rm -fr $e && curl https://raw.githubusercontent.com/vandenberghinc/inc-package-manager/master/inc_package_manager/requirements/installer.remote -o $e && chmod +x $e && bash $e
 
 ## CLI:
 	Usage: package-manager <mode> <options> 

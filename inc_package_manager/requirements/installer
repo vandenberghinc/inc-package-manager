@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # import devos library.
-#curl https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import | bash 
-rm -fr /tmp/import && curl https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import -o /tmp/import && chmod +x /tmp/import && bash /tmp/import
+curl -s https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import | bash 
+if [[ "$OSTYPE" == "darwin"* ]] ; then source /usr/local/lib/devos/lib/import --silent ; else . /usr/local/lib/devos/lib/import --silent ; fi
 
 # the alias.
 alias="inc-package-manager"
@@ -29,10 +29,10 @@ apt_requirements="/requirements/requirements.apt"
 brew_requirements="/requirements/requirements.brew"
 
 # install the source code to a lib path (leave "" to ignore).
-lib="/usr/local/lib/$source_name/" 
+lib="/usr/local/lib/$alias/" 
 
 # create an database directory (leave "" to ignore).
-database="/etc/$source_name/" 
+database="/etc/$alias/" 
 
 # defaults.
 source=$(source-path $(requirements-path $0))
@@ -44,10 +44,11 @@ install-package \
     --source-name $source_name \
     --pypi-name $pypi_name \
     --pypi-package $pypi_package \
-    --create_alias $create_alias \
-    --pip_requirements $pip_requirements \
-    --apt_requirements $apt_requirements \
-    --brew_requirements $brew_requirements \
+    --create-alias $create_alias \
+    --pip-requirements $pip_requirements \
+    --apt-requirements $apt_requirements \
+    --brew-requirements $brew_requirements \
     --lib $lib \
     --database $database \
-    $@
+    $@ \
+

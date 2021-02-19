@@ -2,14 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # insert the package for universal imports.
-import os, sys, syst3m
-
-# settings.
-SOURCE_PATH = syst3m.defaults.get_source_path(__file__, back=1)
-BASE = syst3m.defaults.get_source_path(SOURCE_PATH)
-sys.path.insert(1, BASE)
-
-# imports.
+import os, sys, syst3m ; sys.path.insert(1, syst3m.defaults.source_path(__file__, back=2))
 from inc_package_manager.classes.config import *
 from inc_package_manager.classes import *
 
@@ -37,16 +30,19 @@ class CLI(cl1.CLI):
 
 		#
 	def start(self):
+
+		# check args.
+		self.arguments.check()
 		
 		# help.
-		if self.arguments_present(['-h', '--help']):
+		if self.arguments.present(['-h', '--help']):
 			print(self.documentation)
 
 		# config.
-		elif self.argument_present('--config'):
+		elif self.arguments.present('--config'):
 			loader = syst3m.console.Loader(f"Updating the configuration setttings")
 			edits = 0
-			api_key = self.get_argument('--api-key', required=False)
+			api_key = self.arguments.get('--api-key', required=False)
 			if api_key != None:
 				package_manager.configuration.dictionary["api_key"] = api_key
 				edits += 1 
@@ -58,23 +54,23 @@ class CLI(cl1.CLI):
 				r3sponse.log(error="Speficy one of the configuration arguments to edit. Run ($ package-manager -h) for more info.")
 
 		# install a package.
-		elif self.argument_present('--install'):
-			package_manager.install(self.get_argument('--install'))
+		elif self.arguments.present('--install'):
+			package_manager.install(self.arguments.get('--install'))
 
 		# uninstall a package.
-		elif self.argument_present('--uninstall'):
-			package_manager.uninstall(self.get_argument('--uninstall'))
+		elif self.arguments.present('--uninstall'):
+			package_manager.uninstall(self.arguments.get('--uninstall'))
 
 		# install a package.
-		elif self.argument_present('--update'):
-			package = self.get_argument('--update', required=False)
+		elif self.arguments.present('--update'):
+			package = self.arguments.get('--update', required=False)
 			if package == None: package = "all"
 			package_manager.update(package)
 
 		# install a package.
-		elif self.argument_present('--version'):
-			package = self.get_argument('--version')
-			remote = self.argument_present("--remote")
+		elif self.arguments.present('--version'):
+			package = self.arguments.get('--version')
+			remote = self.arguments.present("--remote")
 			response = package_manager.version(package, remote=remote)
 			if not response.success: print(response.error)
 			else:
