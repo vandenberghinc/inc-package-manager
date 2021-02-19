@@ -278,8 +278,16 @@ class PackageManager(object):
 		if response_object.status_code != 200:
 			return r3sponse.error(f"Invalid request ({url}) [{response_object.status_code}]: {response_object.text}")
 		if json:
-			try: response = response_object.json()
-			except: return r3sponse.error(f"Unable to serialize output: {response_object}, text: {response_object.text}")
+			#try: response = response_object.json()
+			#except: return r3sponse.error(f"Unable to serialize output: {response_object}, text: {response_object.text}")
+			try: response = r3sponse.ResponseObject(response_object.json())	
+			except: 
+				try: response = r3sponse.ResponseObject(json=response_object.json())
+				except:
+					try:
+						return r3sponse.error(f"Unable to serialze output (json): {response_object.json()}")
+					except:
+						return r3sponse.error(f"Unable to serialze output (txt): {response_object.txt}")
 			return response
 		return response_object
 
