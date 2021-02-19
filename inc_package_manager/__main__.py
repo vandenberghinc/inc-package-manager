@@ -4,7 +4,7 @@
 # insert the package for universal imports.
 import os, sys, syst3m ; sys.path.insert(1, syst3m.defaults.source_path(__file__, back=2))
 from inc_package_manager.classes.config import *
-from inc_package_manager.classes import *
+from inc_package_manager import package_manager
 
 # the cli object class.
 class CLI(cl1.CLI):
@@ -22,7 +22,9 @@ class CLI(cl1.CLI):
 				"-h / --help":"Show the documentation.",
 			},
 			options={
-				#"-y / --assume-yes":"Do not prompt for the [Are you sure] warning.",
+				"-y / --assume-yes":"Do not prompt for the [Are you sure] warning.",
+				"-j / --json":"Print the response in json format.",
+				"--log-level <int>":"Overwrite the default log levels.",
 			},
 			alias=ALIAS,
 			executable=__file__,
@@ -38,55 +40,47 @@ class CLI(cl1.CLI):
 		if self.arguments.present(['-h', '--help']):
 			self.docs(success=True, json=JSON)
 
-		# version.
-		#elif self.arguments.present(['--version']):
-		#	print(f"{ALIAS} version:",Files.load(f"{SOURCE_PATH}/.version").replace("\n",""))
-
 		# config.
 		elif self.arguments.present('--config'):
 			loader = syst3m.console.Loader(f"Updating the configuration setttings")
 			edits = 0
-			api_key = self.arguments.get('--api-key', required=False)
+			api_key = self.arguments.get('--api-key', required=False, json=JSON)
 			if api_key != None:
 				package_manager.configuration.dictionary["api_key"] = api_key
 				edits += 1 
 			if edits > 0:
 				package_manager.configuration.save()
 				loader.stop()
+				self.stop(message=f"Successfully saved {edits} edit(s).", json=JSON)
 			else:
 				loader.stop(success=False)
-				r3sponse.log(error="Speficy one of the configuration arguments to edit. Run ($ package-manager -h) for more info.")
+				self.stop(error="Speficy one of the configuration arguments to edit. Run ($ package-manager -h) for more info.", json=JSON)
 
 		# install a package.
 		elif self.arguments.present('--install'):
-			package_manager.install(self.arguments.get('--install'))
+			self.stop(response=package_manager.install(self.arguments.get('--install')), json=JSON)
 
 		# uninstall a package.
 		elif self.arguments.present('--uninstall'):
-			package_manager.uninstall(self.arguments.get('--uninstall'))
+			package = self.arguments.get('--uninstall', json=JSON)
+			if not self.arguments.present(["-y", "--assume-yes"]) and not JSON and not syst3m.console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
+				self.stop(message="Aborted.")
+			self.stop(response=package_manager.uninstall(package), json=JSON)
 
 		# install a package.
 		elif self.arguments.present('--update'):
-			package = self.arguments.get('--update', required=False)
+			package = self.arguments.get('--update', required=False, json=JSON)
 			if package == None: package = "all"
-			package_manager.update(package)
+			self.stop(response=package_manager.update(package), json=JSON)
 
 		# install a package.
 		elif self.arguments.present('--version'):
-			package = self.arguments.get('--version')
+			package = self.arguments.get('--version', json=JSON)
 			remote = self.arguments.present("--remote")
-			response = package_manager.version(package, remote=remote)
-			if not response.success: print(response.error)
-			else:
-				if remote: 
-					print(f"{package}{remote}: {response.remote_version}")
-				else: 
-					print(f"{package} remote: {response.current_version}")
+			self.stop(response=package_manager.version(package, remote=remote), json=JSON)
 
 		# invalid.
-		else: 
-			print(self.documentation)
-			r3sponse.log(error="Selected an invalid mode.")
+		else: self.invalid(json=JSON)
 
 		#
 	

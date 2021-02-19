@@ -2,4 +2,4 @@
 # -*- coding: utf-8 -*-
 
 # imports.
-from inc_package_manager.classes.manager import package_manager
+from inc_package_manager.classes.packages import package_manager
