@@ -16,8 +16,8 @@ class CLI(cl1.CLI):
 				"--install package-name":"Install a package.",
 				"--uninstall package-name":"Uninstall a package.",
 				"--update [optional: package-name]":"Update all packages, optionally specify one package to update.",
-				"--version packge-name [optional: --remote]":"Retrieve the installed / remote version of a package.",
-				"--requirements packge-name [optional: --remote]":"Retrieve the installed / remote version of a package in requirements format.",
+				"--version package-name [optional: --remote]":"Retrieve the installed / remote version of a package.",
+				"--requirements package-name [optional: --remote]":"Retrieve the installed / remote version of a package in requirements format.",
 				"--config":"Configure the package-manager.",
 				"   --api-key your-api-key":"Specify your vandenberghinc api key.",
 				"-h / --help":"Show the documentation.",
@@ -35,7 +35,7 @@ class CLI(cl1.CLI):
 	def start(self):
 
 		# check arguments.
-		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version"], json=JSON)
+		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version", "--remote"], json=JSON)
 
 		# help.
 		if self.arguments.present(['-h', '--help']):
@@ -83,9 +83,9 @@ class CLI(cl1.CLI):
 				self.stop(response=response, json=JSON)
 			else:
 				if self.arguments.present(["--requirements"]):
-					self.stop(message=f"{package} version:",response.version, json=JSON)
+					self.stop(message=f"{package}=={response.version}", json=JSON)
 				else:
-					self.stop(message=f"{package} version:",response.version, json=JSON)
+					self.stop(message=f"{package} version: {response.version}", json=JSON)
 
 		# invalid.
 		else: self.invalid(json=JSON)
