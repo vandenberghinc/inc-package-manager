@@ -1,3 +1,2 @@
-include */README.md
-include */.version
-include */**/.version
+include .version
+include inc_package_manager/.version

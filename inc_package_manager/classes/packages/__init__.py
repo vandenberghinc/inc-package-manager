@@ -26,7 +26,7 @@ class PackageManager(object):
 		package = self.__package_identifier__(package)
 		if package not in list(self.packages.keys()):
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error_response(f"Specified package [{package} does not exist.", log_level=log_level)
+			return r3sponse.error(f"Specified package [{package} does not exist.", log_level=log_level)
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
@@ -35,7 +35,7 @@ class PackageManager(object):
 		# check api key.
 		if not free and self.api_key == None:
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error_response(f"Specify your vandenberghinc api key to install library {package}, execute [$ package-manager --config --api-key your-api-key].", log_level=log_level)
+			return r3sponse.error(f"Specify your vandenberghinc api key to install library {package}, execute [$ package-manager --config --api-key your-api-key].", log_level=log_level)
 
 		# install package.
 		if post_install in [None, False, ""]:
@@ -66,7 +66,7 @@ class PackageManager(object):
 
 		# handle status code.
 		if response_object.status_code != 200:
-			return r3sponse.error_response(f"Failed to install package [{package}], api status code: {response_object.status_code} (/packages/download/).", log_level=log_level)	
+			return r3sponse.error(f"Failed to install package [{package}], api status code: {response_object.status_code} (/packages/download/).", log_level=log_level)	
 
 		# check json applicaton.
 		if response_object.headers["content-type"] == "application/json":
@@ -75,14 +75,14 @@ class PackageManager(object):
 			try: response = response_object.json()
 			except:
 				if log_level >= 0: loader.stop(success=False)
-				return r3sponse.error_response(f"Failed to install package [{package}], response: {response_object}.", log_level=log_level)	
-			if not r3sponse.success(response):
+				return r3sponse.error(f"Failed to install package [{package}], response: {response_object}.", log_level=log_level)	
+			if not response.success:
 				if log_level >= 0: loader.stop(success=False)
-				return r3sponse.error_response(f"Failed to install package [{package}], error: {response['error']}", log_level=log_level)	
+				return r3sponse.error(f"Failed to install package [{package}], error: {response['error']}", log_level=log_level)	
 
 		# check unkown applicaton.
 		if response_object.headers["content-type"] != "application/force-download":
-			return r3sponse.error_response(f"Failed to install package [{package}], unkown response application: {response_object.headers['content-type']}", log_level=log_level)	
+			return r3sponse.error(f"Failed to install package [{package}], unkown response application: {response_object.headers['content-type']}", log_level=log_level)	
 
 		# write out.
 		if log_level >= 0: loader.mark(new_message=f"Writing out package {package}")
@@ -90,10 +90,10 @@ class PackageManager(object):
 			open(zip.file_path.path, 'wb').write(response_object.content)
 		except Exception as e:
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error_response(f"Failed to install package [{package}], error: {e}.", log_level=log_level)	
+			return r3sponse.error(f"Failed to install package [{package}], error: {e}.", log_level=log_level)	
 		if not zip.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error_response(f"Failed to install package [{package}], failed to write out {zip.file_path.path}.", log_level=log_level)
+			return r3sponse.error(f"Failed to install package [{package}], failed to write out {zip.file_path.path}.", log_level=log_level)
 
 		# extract.
 		if log_level >= 0: loader.mark(new_message=f"Extracting package {package}")
@@ -103,18 +103,18 @@ class PackageManager(object):
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return r3sponse.error_response(f"Failed to install package [{package}], found no packages while extracting.", log_level=log_level)
+			return r3sponse.error(f"Failed to install package [{package}], found no packages while extracting.", log_level=log_level)
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return r3sponse.error_response(f"Failed to install package [{package}], found multiple packages while extracting.", log_level=log_level)
+			return r3sponse.error(f"Failed to install package [{package}], found multiple packages while extracting.", log_level=log_level)
 		os.system(f"mv {paths[0]} {tmp_dir.file_path.path}")
 		if not tmp_dir.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return r3sponse.error_response(f"Failed to install package [{package}], failed to write out {tmp_dir.file_path.path}.", log_level=log_level)
+			return r3sponse.error(f"Failed to install package [{package}], failed to write out {tmp_dir.file_path.path}.", log_level=log_level)
 
 		# post installation.
 		if post_install not in [None, False, ""]:
@@ -130,24 +130,24 @@ class PackageManager(object):
 				if log_level >= 1: print(output)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
+				return r3sponse.success(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return r3sponse.error_response(f"Failed to install package [{package}], failed to run the post installation script output: \n{output}.", log_level=log_level)
+				return r3sponse.error(f"Failed to install package [{package}], failed to run the post installation script output: \n{output}.", log_level=log_level)
 		else:
 			os.system(f"mv {tmp_dir.file_path.path} {library}")
 			if tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop()
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return r3sponse.success_response(f"Successfully installed package [{package}].", log_level=log_level)
+				return r3sponse.success(f"Successfully installed package [{package}].", log_level=log_level)
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return r3sponse.error_response(f"Failed to install package [{package}], failed to move the library to {library}.", log_level=log_level)
+				return r3sponse.error(f"Failed to install package [{package}], failed to move the library to {library}.", log_level=log_level)
 
 		#
 	def uninstall(self, package, log_level=LOG_LEVEL):
@@ -159,7 +159,7 @@ class PackageManager(object):
 		package = self.__package_identifier__(package)
 		if package not in list(self.packages.keys()):
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error_response(f"Specified package [{package} does not exist.", log_level=log_level)
+			return r3sponse.error(f"Specified package [{package} does not exist.", log_level=log_level)
 
 		# delete package.
 		if self.packages[package]["library"] not in ["", None, False]:
@@ -169,14 +169,14 @@ class PackageManager(object):
 				except PermissionError: file_path.delete(forced=True, sudo=True)
 			if file_path.exists():
 				if log_level >= 0: loader.stop(success=False)
-				return r3sponse.error_response(f"Failed to uninstall package [{package}].", log_level=log_level)
+				return r3sponse.error(f"Failed to uninstall package [{package}].", log_level=log_level)
 
 		# alias.
 		os.system(f"rm -fr /usr/local/bin/{package}")
 
 		# success.
 		if log_level >= 0: loader.stop()
-		return r3sponse.success_response(f"Successfully uninstalled package [{package}].", log_level=log_level)
+		return r3sponse.success(f"Successfully uninstalled package [{package}].", log_level=log_level)
 
 		#
 	def update(self, package="all", post_install_args="", log_level=LOG_LEVEL):
@@ -188,15 +188,15 @@ class PackageManager(object):
 					response = self.update(package, log_level=log_level)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
 					elif response.success: c += 1
-			return r3sponse.success_response(f"Successfully updated {c} package(s).", log_level=0)
+			return r3sponse.success(f"Successfully updated {c} package(s).", log_level=0)
 		# update package.
 		else:
 			# check package.
 			package = self.__package_identifier__(package)
 			if package not in list(self.packages.keys()):
-				return r3sponse.error_response(f"Package [{package} does not exist.", log_level=log_level)
+				return r3sponse.error(f"Package [{package} does not exist.", log_level=log_level)
 			if not self.__installed__(package):
-				return r3sponse.error_response(f"Package [{package} is not installed.", log_level=log_level)
+				return r3sponse.error(f"Package [{package} is not installed.", log_level=log_level)
 			response = self.version(package, remote=True)
 			if response["error"] != None: 
 				r3sponse.log(response=response, log_level=log_level)
@@ -207,10 +207,10 @@ class PackageManager(object):
 				r3sponse.log(response=response, log_level=log_level)
 				return response
 			if response.version == remote_version:
-				return r3sponse.error_response(f"Package {package} is already up-to-date ({response.version}).", log_level=log_level)
+				return r3sponse.error(f"Package {package} is already up-to-date ({response.version}).", log_level=log_level)
 			response = self.install(package, post_install_args=post_install_args, log_level=log_level)
 			if response["error"] != None: return response
-			return r3sponse.success_response(f"Successfully updated package [{package}].")
+			return r3sponse.success(f"Successfully updated package [{package}].")
 	def version(self, package, remote=False):
 		if remote:
 			version = self.packages[package]["version"]
@@ -219,30 +219,30 @@ class PackageManager(object):
 			remote = ""
 			package = self.__package_identifier__(package)
 			if package not in list(self.packages.keys()):
-				return r3sponse.error_response(f"Specified package [{package} does not exist.")
+				return r3sponse.error(f"Specified package [{package} does not exist.")
 			if package in ["package-manager", "package_manager"]:
 				path = f'{SOURCE_PATH}/.version'
 				if not os.path.exists(path):
-					return r3sponse.error_response(f"Failed to retrieve the version of package {package}.")
+					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 				version = syst3m.utils.__load_file__(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
 				path = f'{self.packages[package]["library"]}/.version'
 				if not os.path.exists(path):
-					return r3sponse.error_response(f"Failed to retrieve the version of package {package}.")
+					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 				version = syst3m.utils.__load_file__(path).replace("\n","")
 			else:
-				return r3sponse.error_response(f"Failed to retrieve the version of package {package}.")
+				return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 		# handler.
-		return r3sponse.success_response(f"Successfully retrieved the {remote}version of package {package}.", {
+		return r3sponse.success(f"Successfully retrieved the {remote}version of package {package}.", {
 			"version":version,
 		})
 	def up_to_date(self, package):
 		self.__download_packages_info__()
 		package = self.__package_identifier__(package)
 		if package not in list(self.packages.keys()):
-			return r3sponse.error_response(f"Package [{package} does not exist.")
+			return r3sponse.error(f"Package [{package} does not exist.")
 		if not self.__installed__(package):
-			return r3sponse.error_response(f"Package [{package} is not installed.")
+			return r3sponse.error(f"Package [{package} is not installed.")
 		response = self.version(package, remote=True)
 		if response["error"] != None: return response
 		remote_version = response.version
@@ -250,7 +250,7 @@ class PackageManager(object):
 		if response["error"] != None: 
 			return response
 		up_to_date = response.version == remote_version
-		return r3sponse.success_response(f"Successfully compared the versions of package {package}.", {
+		return r3sponse.success(f"Successfully compared the versions of package {package}.", {
 			"up_to_date":up_to_date,
 			"current_version":response.version,
 			"remote_version":remote_version,
@@ -276,17 +276,17 @@ class PackageManager(object):
 		# request.
 		response_object = requests.get(url, allow_redirects=True)
 		if response_object.status_code != 200:
-			return r3sponse.error_response(f"Invalid request ({url}) [{response_object.status_code}]: {response_object.text}")
+			return r3sponse.error(f"Invalid request ({url}) [{response_object.status_code}]: {response_object.text}")
 		if json:
 			try: response = response_object.json()
-			except: return r3sponse.error_response(f"Unable to serialize output: {response_object}, text: {response_object.text}")
+			except: return r3sponse.error(f"Unable to serialize output: {response_object}, text: {response_object.text}")
 			return response
 		return response_object
 
 		#
 	def __download_packages_info__(self):
 		response = self.__request__("/packages/list/")
-		if not r3sponse.success(response): raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
+		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
 		self.packages = response["packages"]
 	def __package_identifier__(self, package):
 		return package.replace(" ","-")
