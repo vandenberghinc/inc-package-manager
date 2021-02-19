@@ -2,7 +2,7 @@
 
 # import devos library.
 curl -s https://raw.githubusercontent.com/vandenberghinc/devos/master/lib/import | bash 
-import-bash /usr/local/lib/devos/lib/import
+if [[ "$OSTYPE" == "darwin"* ]] ; then source /usr/local/lib/devos/lib/import --silent ; else . /usr/local/lib/devos/lib/import --silent ; fi
 
 # the alias.
 alias="inc-package-manager"
