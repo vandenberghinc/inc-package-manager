@@ -237,12 +237,12 @@ class PackageManager(object):
 				path = f'{SOURCE_PATH}/.version'
 				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
-				version = syst3m.Files.load(path).replace("\n","")
+				version = Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
 				path = f'{self.packages[package]["library"]}/.version'
 				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
-				version = syst3m.Files.load(path).replace("\n","")
+				version = Files.load(path).replace("\n","")
 			else:
 				return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 		# handler.
