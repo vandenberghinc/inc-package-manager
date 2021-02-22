@@ -10,7 +10,7 @@ class PackageManager(object):
 		self.packages = {}
 		self.__download_packages_info__() # also tests connection.
 		try: 
-			self.configuration = Files.Dictionary("/etc/package-manager/config", load=True, default={
+			self.configuration = Dictionary("/etc/package-manager/config", load=True, default={
 					"api_key":None,
 				})
 			self.api_key = self.configuration.dictionary["api_key"]
@@ -39,7 +39,7 @@ class PackageManager(object):
 
 		# install package.
 		if post_install in [None, False, ""]:
-			fp = Formats.FilePath(self.packages[package]["library"])
+			fp = FilePath(self.packages[package]["library"])
 			if fp.exists():
 				try: os.remove(fp.path)
 				except PermissionError: 
@@ -49,7 +49,7 @@ class PackageManager(object):
 					if log_level >= 0: loader.release()
 
 		# init zip.
-		zip = Files.Zip(f"/tmp/{package}.zip")
+		zip = Zip(f"/tmp/{package}.zip")
 		extract_dir = Files.Directory(path=f"/tmp/{package}.extract/")
 		extract_dir.fp.delete(forced=True)
 		zip.fp.delete(forced=True)
@@ -171,7 +171,7 @@ class PackageManager(object):
 
 		# delete package.
 		if self.packages[package]["library"] not in ["", None, False]:
-			file_path = Formats.FilePath(self.packages[package]["library"])
+			file_path = FilePath(self.packages[package]["library"])
 			if file_path.exists():
 				try: os.remove(file_path.path)
 				except PermissionError: file_path.delete(forced=True, sudo=True)
@@ -230,14 +230,14 @@ class PackageManager(object):
 				return r3sponse.error(f"Specified package [{package} does not exist.")
 			if package in ["package-manager", "package_manager"]:
 				path = f'{SOURCE_PATH}/.version'
-				if not os.path.exists(path):
+				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
-				version = syst3m.utils.__load_file__(path).replace("\n","")
+				version = syst3m.Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
 				path = f'{self.packages[package]["library"]}/.version'
-				if not os.path.exists(path):
+				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
-				version = syst3m.utils.__load_file__(path).replace("\n","")
+				version = syst3m.Files.load(path).replace("\n","")
 			else:
 				return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 		# handler.
@@ -315,7 +315,7 @@ class PackageManager(object):
 			while True:
 				if len(path) > 0 and path[len(path)-1] == "/": path = path[:-1]
 				else: break
-			return os.path.exists(path)
+			return Files.exists(path)
 		else:
 			raise ValueError(f"Unable to determine if package {package} is installed.")
 

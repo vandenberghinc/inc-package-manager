@@ -6,7 +6,7 @@ import os, sys, ast, json, glob, platform, subprocess, random, requests, urllib
 
 # inc imports.
 import cl1, syst3m
-from fil3s import Files, Formats
+from fil3s import *
 from r3sponse import r3sponse
 
 # source.
@@ -35,7 +35,7 @@ if OS in ["macos"]:
 
 # database.
 DATABASE = f"/etc/{ALIAS}/"
-if not os.path.exists(DATABASE[:-1]):
+if not Files.exists(DATABASE[:-1]):
 	print(f"{syst3m.color.orange}Root permissions{syst3m.color.end} required to create database {DATABASE}.")
 	os.system(f"sudo mkdir {DATABASE} && sudo chown -R {USER}:{GROUP} {DATABASE} && sudo chmod -R 770 {DATABASE}")
 
