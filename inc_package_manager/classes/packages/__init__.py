@@ -9,14 +9,13 @@ class PackageManager(object):
 	def __init__(self):	
 		self.packages = {}
 		self.__download_packages_info__() # also tests connection.
-		try: 
-			self.configuration = Dictionary("/etc/package-manager/config", load=True, default={
-					"api_key":None,
-				})
-			self.api_key = self.configuration.dictionary["api_key"]
-		except: 
-			self.configuration = None
-			self.api_key = None
+		if not os.path.exists(f"/etc/{ALIAS}"):
+			r3sponse.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
+			os.system(f"sudo mkdir /etc/{ALIAS} && sudo chown {syst3m.defaults.vars.user}:{syst3m.defaults.vars.group} /etc/{ALIAS} && sudo chmod 770 /etc/{ALIAS}")
+		self.configuration = Dictionary(f"/etc/{ALIAS}/config", load=True, default={
+				"api_key":None,
+			})
+		self.api_key = self.configuration.dictionary["api_key"]
 	def install(self, package, post_install_args="", log_level=LOG_LEVEL):
 		
 		# loader.
@@ -35,7 +34,7 @@ class PackageManager(object):
 		# check api key.
 		if not free and self.api_key == None:
 			if log_level >= 0: loader.stop(success=False)
-			return r3sponse.error(f"Specify your vandenberghinc api key to install library {package}, execute [$ package-manager --config --api-key your-api-key].")
+			return r3sponse.error(f"Specify your vandenberghinc api key to install library {package}, execute [$ {ALIAS} --config --api-key your-api-key].")
 
 		# install package.
 		if post_install in [None, False, ""]:
@@ -233,7 +232,7 @@ class PackageManager(object):
 			package = self.__package_identifier__(package)
 			if package not in list(self.packages.keys()):
 				return r3sponse.error(f"Specified package [{package} does not exist.")
-			if package in ["package-manager", "package_manager"]:
+			if package in [ALIAS, ALIAS.replace("-","_")]:
 				path = f'{SOURCE_PATH}/.version'
 				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
@@ -313,7 +312,7 @@ class PackageManager(object):
 		return package.replace(" ","-")
 		#
 	def __installed__(self, package):
-		if package in ["package-manager", "package_manager"]:
+		if package in [ALIAS, ALIAS.replace("-","_")]:
 			return True
 		elif self.packages[package]["library"] not in ["", None, False]:
 			path = self.packages[package]["library"]

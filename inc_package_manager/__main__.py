@@ -18,7 +18,7 @@ class CLI(cl1.CLI):
 				"--update [optional: package-name]":"Update all packages, optionally specify one package to update.",
 				"--version package-name [optional: --remote]":"Retrieve the installed / remote version of a package.",
 				"--requirements package-name [optional: --remote]":"Retrieve the installed / remote version of a package in requirements format.",
-				"--config":"Configure the package-manager.",
+				"--config":f"Configure the {ALIAS}.",
 				"   --api-key your-api-key":"Specify your vandenberghinc api key.",
 				"-h / --help":"Show the documentation.",
 			},
@@ -55,7 +55,7 @@ class CLI(cl1.CLI):
 				self.stop(message=f"Successfully saved {edits} edit(s).", json=JSON)
 			else:
 				loader.stop(success=False)
-				self.stop(error="Speficy one of the configuration arguments to edit. Run ($ package-manager -h) for more info.", json=JSON)
+				self.stop(error=f"Speficy one of the configuration arguments to edit. Run ($ {ALIAS} -h) for more info.", json=JSON)
 
 		# install a package.
 		elif self.arguments.present('--install'):
