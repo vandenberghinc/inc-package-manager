@@ -72,10 +72,15 @@ class PackageManager(object):
 		if response_object.headers["content-type"] == "application/json":
 
 			# handle response.
-			try: response = response_object.json()
-			except:
-				if log_level >= 0: loader.stop(success=False)
-				return r3sponse.error(f"Failed to install package [{package}], response: {response_object}.")	
+			try: response = r3sponse.ResponseObject(response_object.json())	
+			except: 
+				try: response = r3sponse.ResponseObject(json=response_object.json())
+				except:
+					if log_level >= 0: loader.stop(success=False)
+					try:
+						return r3sponse.error(f"Failed to install package [{package}]. Unable to serialze output (json): {response_object.json()}")
+					except:
+						return r3sponse.error(f"Failed to install package [{package}]. Unable to serialze output (txt): {response_object.txt}")
 			if not response.success:
 				if log_level >= 0: loader.stop(success=False)
 				return r3sponse.error(f"Failed to install package [{package}], error: {response['error']}")	
