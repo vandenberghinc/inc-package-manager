@@ -12,7 +12,7 @@ class PackageManager(object):
 		if not os.path.exists(f"/etc/{ALIAS}"):
 			r3sponse.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
 			os.system(f"sudo mkdir /etc/{ALIAS} && sudo chown {syst3m.defaults.vars.user}:{syst3m.defaults.vars.group} /etc/{ALIAS} && sudo chmod 770 /etc/{ALIAS}")
-		self.configuration = Dictionary(f"/etc/{ALIAS}/config", load=True, default={
+		self.configuration = Dictionary(path=f"/etc/{ALIAS}/config", load=True, default={
 				"api_key":None,
 			})
 		self.api_key = self.configuration.dictionary["api_key"]
