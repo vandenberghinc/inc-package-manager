@@ -233,12 +233,12 @@ class PackageManager(object):
 			if package not in list(self.packages.keys()):
 				return r3sponse.error(f"Specified package [{package} does not exist.")
 			if package in [ALIAS, ALIAS.replace("-","_")]:
-				path = f'{SOURCE_PATH}/.version'
+				path = f'{SOURCE_PATH}/.version.py'
 				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
-				path = f'{self.packages[package]["library"]}/.version'
+				path = f'{self.packages[package]["library"]}/.version.py'
 				if not Files.exists(path):
 					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
@@ -299,7 +299,7 @@ class PackageManager(object):
 					try:
 						return r3sponse.error(f"Unable to serialze output (json): {response_object.json()}")
 					except:
-						return r3sponse.error(f"Unable to serialze output (txt): {response_object.txt}")
+						return r3sponse.error(f"Unable to serialze output (txt): {response_object}")
 			return response
 		return response_object
 

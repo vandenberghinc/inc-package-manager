@@ -2,9 +2,9 @@
 # pip requirements.
 
 # inc requirements.
-cl1>=1.8.1
-netw0rk>=1.3.9
-r3sponse>=2.4.5
-syst3m>=2.5.8
-fil3s>=2.6.7
+cl1>=1.11.3
+netw0rk>=1.7.0
+r3sponse>=2.8.1
+syst3m>=2.10.5
+fil3s>=2.11.8
 
