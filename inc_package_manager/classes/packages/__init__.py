@@ -68,7 +68,7 @@ class PackageManager(object):
 			return r3sponse.error(f"Failed to install package [{package}], api status code: {response_object.status_code} (/packages/download/).")	
 
 		# check json applicaton.
-		if response_object.headers["content-type"] == "application/json":
+		if "application/json" in response_object.headers["content-type"] :
 
 			# handle response.
 			try: response = r3sponse.ResponseObject(response_object.json())	
@@ -80,12 +80,13 @@ class PackageManager(object):
 						return r3sponse.error(f"Failed to install package [{package}]. Unable to serialze output (json): {response_object.json()}")
 					except:
 						return r3sponse.error(f"Failed to install package [{package}]. Unable to serialze output (txt): {response_object.txt}")
-			if not response.success:
-				if log_level >= 0: loader.stop(success=False)
-				return r3sponse.error(f"Failed to install package [{package}], error: {response['error']}")	
+			return response	
+			#if not response.success:
+			#	if log_level >= 0: loader.stop(success=False)
+			#	return r3sponse.error(f"Failed to install package [{package}], error: {response['error']}")	
 
 		# check unkown applicaton.
-		if response_object.headers["content-type"] != "application/force-download":
+		elif "application/force-download" not in response_object.headers["content-type"]:
 			return r3sponse.error(f"Failed to install package [{package}], unkown response application: {response_object.headers['content-type']}")	
 
 		# write out.
