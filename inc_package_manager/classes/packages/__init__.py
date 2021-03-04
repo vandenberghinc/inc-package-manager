@@ -218,7 +218,7 @@ class PackageManager(object):
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
 			return r3sponse.success(f"Successfully updated package [{package}] ({version}).")
-	def version(self, package, remote=False):
+	def version(self, package, remote=False, log_level=LOG_LEVEL):
 		if remote:
 			version = self.packages[package]["version"]
 			remote = "remote "
