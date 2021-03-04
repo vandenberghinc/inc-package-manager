@@ -200,7 +200,7 @@ class PackageManager(object):
 					response = self.update(package)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
 					elif response.success: c += 1
-			return r3sponse.success(f"Successfully updated {c} package(s).", log_level=0)
+			return r3sponse.success(f"Successfully updated {c} package(s).")
 		# update package.
 		else:
 			# check package.
@@ -240,7 +240,7 @@ class PackageManager(object):
 			elif self.packages[package]["library"] not in ["", False, None]:
 				path = f'{self.packages[package]["library"]}/.version.py'
 				if not Files.exists(path):
-					return r3sponse.error(f"Failed to retrieve the version of package {package}.")
+					return r3sponse.error(f"Failed to retrieve the version of package {package} [{path}].")
 				version = Files.load(path).replace("\n","")
 			else:
 				return r3sponse.error(f"Failed to retrieve the version of package {package}.")
