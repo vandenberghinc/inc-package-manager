@@ -19,7 +19,7 @@ class PackageManager(object):
 	def install(self, package, post_install_args="", log_level=LOG_LEVEL):
 		
 		# check & version.
-		response = self.version(package, log_level=log_level)
+		response = self.version(package, remote=True, log_level=log_level)
 		if not response.success: return response
 		version = response.version
 
@@ -28,7 +28,6 @@ class PackageManager(object):
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
-
 
 		# check api key.
 		if not free and self.api_key == None:
