@@ -3,7 +3,7 @@
 
 # insert the package for universal imports.
 import os, sys
-from fil3s import * ; sys.path.insert(1, Defaults.source_path(__file__, back=2))
+from dev0s import * ; sys.path.insert(1, Defaults.source_path(__file__, back=2))
 from inc_package_manager.classes.config import *
 from inc_package_manager import package_manager
 
