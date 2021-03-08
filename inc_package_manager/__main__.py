@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 # insert the package for universal imports.
-import os, sys, syst3m ; sys.path.insert(1, syst3m.defaults.source_path(__file__, back=2))
+import os, sys
+from fil3s import * ; sys.path.insert(1, Defaults.source_path(__file__, back=2))
 from inc_package_manager.classes.config import *
 from inc_package_manager import package_manager
 
 # the cli object class.
-class CLI(cl1.CLI):
+class CLI_(CLI.CLI):
 	def __init__(self):
 		
 		# defaults.
-		cl1.CLI.__init__(self,
+		CLI.CLI.__init__(self,
 			modes={
 				"--install package-name":"Install a package.",
 				"--uninstall package-name":"Uninstall a package.",
@@ -94,5 +95,5 @@ class CLI(cl1.CLI):
 	
 # main.
 if __name__ == "__main__":
-	cli = CLI()
+	cli = CLI_()
 	cli.start()
