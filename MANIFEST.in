@@ -1,1 +1,1 @@
-include inc_package_manager/.version.py
+include inc_package_manager/.version

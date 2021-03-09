@@ -227,12 +227,12 @@ class PackageManager(object):
 			if package not in list(self.packages.keys()):
 				return Response.error(f"Specified package [{package} does not exist.")
 			if package in [ALIAS, ALIAS.replace("-","_")]:
-				path = f'{SOURCE_PATH}/.version.py'
+				path = f'{SOURCE_PATH}/.version'
 				if not Files.exists(path):
 					return Response.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
-				path = f'{self.packages[package]["library"]}/.version.py'
+				path = f'{self.packages[package]["library"]}/.version'
 				if not Files.exists(path):
 					return Response.error(f"Failed to retrieve the version of package {package} [{path}].")
 				version = Files.load(path).replace("\n","")
