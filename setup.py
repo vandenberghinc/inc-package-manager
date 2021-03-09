@@ -7,7 +7,7 @@
 from setuptools import setup, find_packages
 setup(
 	name='inc-package-manager',
-	version='2.10.1',
+	version='2.10.2',
 	description='Some description.',
 	url='http://github.com/vandenberghinc/vandenberghinc-package-manager',
 	author='Daan van den Bergh',
@@ -17,9 +17,7 @@ setup(
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
-            'cl1',
             'netw0rk',
-            'r3sponse',
             'syst3m',
             'dev0s',
         ],)
