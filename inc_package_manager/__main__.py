@@ -44,7 +44,7 @@ class CLI_(CLI.CLI):
 
 		# config.
 		elif self.arguments.present('--config'):
-			loader = syst3m.console.Loader(f"Updating the configuration setttings")
+			loader = Console.Loader(f"Updating the configuration setttings")
 			edits = 0
 			api_key = self.arguments.get('--api-key', required=False, json=JSON)
 			if api_key != None:
@@ -65,7 +65,7 @@ class CLI_(CLI.CLI):
 		# uninstall a package.
 		elif self.arguments.present('--uninstall'):
 			package = self.arguments.get('--uninstall', json=JSON)
-			if not self.arguments.present(["-y", "--assume-yes"]) and not JSON and not syst3m.console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
+			if not self.arguments.present(["-y", "--assume-yes"]) and not JSON and not Console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
 				self.stop(message="Aborted.")
 			self.stop(response=package_manager.uninstall(package), json=JSON)
 

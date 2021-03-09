@@ -5,7 +5,7 @@
 import os, sys, ast, json, glob, platform, subprocess, random, requests, urllib
 
 # inc imports.
-import syst3m
+import dev0s, syst3m
 from dev0s import *
 
 # source.

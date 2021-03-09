@@ -3,8 +3,8 @@
 
 # inc requirements.
 cl1>=1.13.2
-netw0rk>=1.9.6
+netw0rk>=1.9.7
 r3sponse>=2.10.3
-syst3m>=2.17.0
-dev0s>=2.17.2
+syst3m>=2.17.1
+dev0s>=2.17.6
 

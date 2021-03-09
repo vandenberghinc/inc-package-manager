@@ -24,7 +24,7 @@ class PackageManager(object):
 		version = response.version
 
 		# loader.
-		if log_level >= 0: loader = syst3m.console.Loader(f"Checking package {package} ({version})")
+		if log_level >= 0: loader = Console.Loader(f"Checking package {package} ({version})")
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
@@ -129,7 +129,7 @@ class PackageManager(object):
 			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			#if log_level >= 0: loader.release()
 			command = f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
-			#output = syst3m.utils.__execute_script__(command)
+			#output = dev0s.utils.__execute_script__(command)
 			response = Code.execute(command)
 			if not response.success: 
 				if log_level >= 0: loader.stop(success=False)
@@ -170,7 +170,7 @@ class PackageManager(object):
 		version = response.version
 
 		# loader.
-		if log_level >= 0: loader = syst3m.console.Loader(f"Uninstalling package {package} ({version})")
+		if log_level >= 0: loader = Console.Loader(f"Uninstalling package {package} ({version})")
 
 		# delete package.
 		if self.packages[package]["library"] not in ["", None, False]:
