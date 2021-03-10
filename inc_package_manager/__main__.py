@@ -36,60 +36,60 @@ class CLI_(CLI.CLI):
 	def start(self):
 
 		# check arguments.
-		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version", "--remote"], json=JSON)
+		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version", "--remote"], json=Defaults.options.json)
 
 		# help.
 		if self.arguments.present(['-h', '--help']):
-			self.docs(success=True, json=JSON)
+			self.docs(success=True, json=Defaults.options.json)
 
 		# config.
 		elif self.arguments.present('--config'):
 			loader = Console.Loader(f"Updating the configuration setttings")
 			edits = 0
-			api_key = self.arguments.get('--api-key', required=False, json=JSON)
+			api_key = self.arguments.get('--api-key', required=False, json=Defaults.options.json)
 			if api_key != None:
 				package_manager.configuration.dictionary["api_key"] = api_key
 				edits += 1 
 			if edits > 0:
 				package_manager.configuration.save()
 				loader.stop()
-				self.stop(message=f"Successfully saved {edits} edit(s).", json=JSON)
+				self.stop(message=f"Successfully saved {edits} edit(s).", json=Defaults.options.json)
 			else:
 				loader.stop(success=False)
-				self.stop(error=f"Speficy one of the configuration arguments to edit. Run ($ {ALIAS} -h) for more info.", json=JSON)
+				self.stop(error=f"Speficy one of the configuration arguments to edit. Run ($ {ALIAS} -h) for more info.", json=Defaults.options.json)
 
 		# install a package.
 		elif self.arguments.present('--install'):
-			self.stop(response=package_manager.install(self.arguments.get('--install')), json=JSON)
+			self.stop(response=package_manager.install(self.arguments.get('--install')), json=Defaults.options.json)
 
 		# uninstall a package.
 		elif self.arguments.present('--uninstall'):
-			package = self.arguments.get('--uninstall', json=JSON)
-			if not self.arguments.present(["-y", "--assume-yes"]) and not JSON and not Console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
+			package = self.arguments.get('--uninstall', json=Defaults.options.json)
+			if not self.arguments.present(["-y", "--assume-yes"]) and not Defaults.options.json and not Console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
 				self.stop(message="Aborted.")
-			self.stop(response=package_manager.uninstall(package), json=JSON)
+			self.stop(response=package_manager.uninstall(package), json=Defaults.options.json)
 
 		# update a package.
 		elif self.arguments.present('--update'):
-			package = self.arguments.get('--update', required=False, json=JSON)
+			package = self.arguments.get('--update', required=False, json=Defaults.options.json)
 			if package == None: package = "all"
-			self.stop(response=package_manager.update(package), json=JSON)
+			self.stop(response=package_manager.update(package), json=Defaults.options.json)
 
 		# get the version of a package.
 		elif self.arguments.present(['--version', "--requirements"]):
-			package = self.arguments.get('--version', json=JSON)
+			package = self.arguments.get('--version', json=Defaults.options.json)
 			remote = self.arguments.present("--remote")
 			response = package_manager.version(package)
 			if not response["success"]:
-				self.stop(response=response, json=JSON)
+				self.stop(response=response, json=Defaults.options.json)
 			else:
 				if self.arguments.present(["--requirements"]):
-					self.stop(message=f"{package}=={response.version}", json=JSON)
+					self.stop(message=f"{package}=={response.version}", json=Defaults.options.json)
 				else:
-					self.stop(message=f"{package} version: {response.version}", json=JSON)
+					self.stop(message=f"{package} version: {response.version}", json=Defaults.options.json)
 
 		# invalid.
-		else: self.invalid(json=JSON)
+		else: self.invalid(json=Defaults.options.json)
 
 		#
 	

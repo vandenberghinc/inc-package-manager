@@ -16,7 +16,7 @@ class PackageManager(object):
 				"api_key":None,
 			})
 		self.api_key = self.configuration.dictionary["api_key"]
-	def install(self, package, post_install_args="", log_level=LOG_LEVEL):
+	def install(self, package, post_install_args="", log_level=Defaults.options.log_level):
 		
 		# check & version.
 		response = self.version(package, remote=True, log_level=log_level)
@@ -128,7 +128,7 @@ class PackageManager(object):
 			#if log_level >= 0: loader.hold()
 			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			#if log_level >= 0: loader.release()
-			command = f"sudo -u {USER} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
+			command = f"sudo -u {Defaults.vars.user} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = dev0s.utils.__execute_script__(command)
 			response = Code.execute(command)
 			if not response.success: 
@@ -162,7 +162,7 @@ class PackageManager(object):
 				return Response.error(f"Failed to install package [{package}] ({version}), failed to move the library to {library}.")
 
 		#
-	def uninstall(self, package, log_level=LOG_LEVEL):
+	def uninstall(self, package, log_level=Defaults.options.log_level):
 
 		# check & version.
 		response = self.version(package, log_level=log_level)
@@ -190,7 +190,7 @@ class PackageManager(object):
 		return Response.success(f"Successfully uninstalled package [{package}].")
 
 		#
-	def update(self, package="all", post_install_args="", log_level=LOG_LEVEL):
+	def update(self, package="all", post_install_args="", log_level=Defaults.options.log_level):
 		# update all recursive.
 		if package == "all":
 			c = 0
@@ -217,7 +217,7 @@ class PackageManager(object):
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
 			return Response.success(f"Successfully updated package [{package}] ({version}).")
-	def version(self, package, remote=False, log_level=LOG_LEVEL):
+	def version(self, package, remote=False, log_level=Defaults.options.log_level):
 		if remote:
 			version = self.packages[package]["version"]
 			remote = "remote "
@@ -227,7 +227,7 @@ class PackageManager(object):
 			if package not in list(self.packages.keys()):
 				return Response.error(f"Specified package [{package} does not exist.")
 			if package in [ALIAS, ALIAS.replace("-","_")]:
-				path = f'{SOURCE_PATH}/.version'
+				path = f'{SOURCE}/.version'
 				if not Files.exists(path):
 					return Response.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
