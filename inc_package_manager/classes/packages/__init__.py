@@ -22,9 +22,13 @@ class PackageManager(object):
 		response = self.version(package, remote=True, log_level=log_level)
 		if not response.success: return response
 		version = response.version
+		version_str = f"({version})"
+		response = self.version(package, remote=False, log_level=log_level)
+		if response.succerss:
+			version_str = f"({response.version}) ==> ({version})"
 
 		# loader.
-		if log_level >= 0: loader = Console.Loader(f"Checking package {package} ({version})")
+		if log_level >= 0: loader = Console.Loader(f"Checking package {package} {version_str}")
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
@@ -54,7 +58,7 @@ class PackageManager(object):
 		tmp_dir = Files.Directory(path=f"/tmp/{package}/")
 
 		# make request.
-		if log_level >= 0: loader.mark(new_message=f"Downloading package {package} ({version})")
+		if log_level >= 0: loader.mark(new_message=f"Downloading package {package} {version_str}")
 		response_object = self.__request__("/packages/download/", {
 			"package":package,
 			"format":"zip",
@@ -63,7 +67,7 @@ class PackageManager(object):
 
 		# handle status code.
 		if response_object.status_code != 200:
-			return Response.error(f"Failed to install package [{package}] ({version}), api status code: {response_object.status_code} (/packages/download/).")	
+			return Response.error(f"Failed to install package [{package}] {version_str}, api status code: {response_object.status_code} (/packages/download/).")	
 
 		# check json applicaton.
 		if "application/json" in response_object.headers["content-type"] :
@@ -75,9 +79,9 @@ class PackageManager(object):
 				except:
 					if log_level >= 0: loader.stop(success=False)
 					try:
-						return Response.error(f"Failed to install package [{package}] ({version}). Unable to serialze output (json): {response_object.json()}")
+						return Response.error(f"Failed to install package [{package}] {version_str}. Unable to serialze output (json): {response_object.json()}")
 					except:
-						return Response.error(f"Failed to install package [{package}] ({version}). Unable to serialze output (txt): {response_object.txt}")
+						return Response.error(f"Failed to install package [{package}] {version_str}. Unable to serialze output (txt): {response_object.txt}")
 			if log_level >= 0: loader.stop(success=response["success"])
 			return response	
 			#if not response.success:
@@ -86,43 +90,43 @@ class PackageManager(object):
 
 		# check unkown applicaton.
 		elif "application/force-download" not in response_object.headers["content-type"]:
-			return Response.error(f"Failed to install package [{package}] ({version}), unkown response application: {response_object.headers['content-type']}")	
+			return Response.error(f"Failed to install package [{package}] {version_str}, unkown response application: {response_object.headers['content-type']}")	
 
 		# write out.
-		if log_level >= 0: loader.mark(new_message=f"Writing out package [{package}] ({version})")
+		if log_level >= 0: loader.mark(new_message=f"Writing out package [{package}] {version_str}")
 		try:
 			open(zip.file_path.path, 'wb').write(response_object.content)
 		except Exception as e:
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package [{package}] ({version}), error: {e}.")	
+			return Response.error(f"Failed to install package [{package}] {version_str}, error: {e}.")	
 		if not zip.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package [{package}] ({version}), failed to write out {zip.file_path.path}.")
+			return Response.error(f"Failed to install package [{package}] {version_str}, failed to write out {zip.file_path.path}.")
 
 		# extract.
-		if log_level >= 0: loader.mark(new_message=f"Extracting package {package} ({version})")
+		if log_level >= 0: loader.mark(new_message=f"Extracting package {package} {version_str}")
 		zip.extract(base=extract_dir.file_path.path)
 		paths = extract_dir.paths(recursive=False)
 		if len(paths) == 0:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] ({version}), found no packages while extracting.")
+			return Response.error(f"Failed to install package [{package}] {version_str}, found no packages while extracting.")
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] ({version}), found multiple packages while extracting.")
+			return Response.error(f"Failed to install package [{package}] {version_str}, found multiple packages while extracting.")
 		os.system(f"mv {paths[0]} {tmp_dir.file_path.path}")
 		if not tmp_dir.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] ({version}), failed to write out {tmp_dir.file_path.path}.")
+			return Response.error(f"Failed to install package [{package}] {version_str}, failed to write out {tmp_dir.file_path.path}.")
 
 		# post installation.
 		if post_install not in [None, False, ""]:
-			if log_level >= 0: loader.mark(new_message=f"Executing post installation script of package {package} ({version})")
+			if log_level >= 0: loader.mark(new_message=f"Executing post installation script of package {package} {version_str}")
 			os.system(f'chmod +x {tmp_dir.file_path.path}{post_install}')
 			print(f"{color.orange}Root permission{color.end} required to install package {package}.")
 			#if log_level >= 0: loader.hold()
@@ -144,24 +148,24 @@ class PackageManager(object):
 				if log_level >= 1: print(output)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package [{package}] ({version}).")
+				return Response.success(f"Successfully installed package [{package}] {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package [{package}] ({version}), failed to run the post installation script output: \n{output}.")
+				return Response.error(f"Failed to install package [{package}] {version_str}, failed to run the post installation script output: \n{output}.")
 		else:
 			os.system(f"mv {tmp_dir.file_path.path} {library}")
 			if tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop()
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package [{package}] ({version}).")
+				return Response.success(f"Successfully installed package [{package}] {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package [{package}] ({version}), failed to move the library to {library}.")
+				return Response.error(f"Failed to install package [{package}] {version_str}, failed to move the library to {library}.")
 
 		#
 	def uninstall(self, package, log_level=Defaults.options.log_level):
@@ -215,10 +219,10 @@ class PackageManager(object):
 				return response
 			remote_version = response.version
 			if version == remote_version:
-				return Response.error(f"Package {package} is already up-to-date ({version}).")
+				return Response.error(f"Package {package} is already up-to-date {version_str}.")
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
-			return Response.success(f"Successfully updated package [{package}] ({version}).")
+			return Response.success(f"Successfully updated package [{package}] {version_str}.")
 	def version(self, package, remote=False, log_level=Defaults.options.log_level):
 		if remote:
 			version = self.packages[package]["version"]
