@@ -137,9 +137,7 @@ class PackageManager(object):
 			os.system('sudo echo "" > /dev/null')
 			command = f"bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = dev0s.utils.__execute_script__(command)
-			if log_level >= 0: loader.hold()
 			response = Code.execute(command)
-			if log_level >= 0: loader.release()
 			if not response.success: 
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
