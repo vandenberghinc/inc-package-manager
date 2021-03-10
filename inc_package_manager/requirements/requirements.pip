@@ -2,7 +2,7 @@
 # pip requirements.
 
 # inc requirements.
-netw0rk>=1.11.2
-syst3m>=2.18.7
-dev0s>=3.3.1
+netw0rk>=1.11.3
+syst3m>=2.18.8
+dev0s>=3.3.2
 
