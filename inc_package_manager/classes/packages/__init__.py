@@ -222,10 +222,10 @@ class PackageManager(object):
 				return response
 			remote_version = response.version
 			if version == remote_version:
-				return Response.error(f"Package {package} is already up-to-date {version_str}.")
+				return Response.error(f"Package {package} is already up-to-date ({version}=={remote_version}).")
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
-			return Response.success(f"Successfully updated package [{package}] {version_str}.")
+			return Response.success(f"Successfully updated package [{package}] ({version}) ==> ({remote_version}).")
 	def version(self, package, remote=False, log_level=Defaults.options.log_level):
 		if remote:
 			version = self.packages[package]["version"]
