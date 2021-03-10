@@ -212,10 +212,10 @@ class PackageManager(object):
 							c += 1
 			if c != 0 and u != 0:
 				return Response.success(f"Successfully updated {c} package(s).")
-			elif u != 0:
-				return Response.success(f"All {u} installed package(s) are already up-to-date.")
 			elif c != 0:
 				return Response.success(f"Successfully updated {c} package(s).")
+			elif u != 0:
+				return Response.success(f"All {u} installed package(s) are already up-to-date.")
 			else:
 				return Response.success(f"There are no packages installed.")
 		# update package.
