@@ -9,6 +9,3 @@ from dev0s import Version, Directory, Files, gfp
 source = Directory(gfp.base(__file__))
 base = Directory(source.fp.base())
 version = Version(Files.load(source.join(".version")))
-print(Files.join(source, ".version"))
-print(base)
-print(version)
