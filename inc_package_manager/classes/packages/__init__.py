@@ -80,29 +80,29 @@ class PackageManager(object):
 				except:
 					if log_level >= 0: loader.stop(success=False)
 					try:
-						return Response.error(f"Failed to install package [{package}] {version_str}. Unable to serialze output (json): {response_object.json()}")
+						return Response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (json): {response_object.json()}")
 					except:
-						return Response.error(f"Failed to install package [{package}] {version_str}. Unable to serialze output (txt): {response_object.txt}")
+						return Response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (txt): {response_object.txt}")
 			if log_level >= 0: loader.stop(success=response["success"])
 			return response	
 			#if not response.success:
 			#	if log_level >= 0: loader.stop(success=False)
-			#	return Response.error(f"Failed to install package [{package}], error: {response['error']}")	
+			#	return Response.error(f"Failed to install package {package}, error: {response['error']}")	
 
 		# check unkown applicaton.
 		elif "application/force-download" not in response_object.headers["content-type"]:
-			return Response.error(f"Failed to install package [{package}] {version_str}, unkown response application: {response_object.headers['content-type']}")	
+			return Response.error(f"Failed to install package {package} {version_str}, unkown response application: {response_object.headers['content-type']}")	
 
 		# write out.
-		if log_level >= 0: loader.mark(new_message=f"Writing out package [{package}] {version_str}")
+		if log_level >= 0: loader.mark(new_message=f"Writing out package {package} {version_str}")
 		try:
 			open(zip.file_path.path, 'wb').write(response_object.content)
 		except Exception as e:
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package [{package}] {version_str}, error: {e}.")	
+			return Response.error(f"Failed to install package {package} {version_str}, error: {e}.")	
 		if not zip.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package [{package}] {version_str}, failed to write out {zip.file_path.path}.")
+			return Response.error(f"Failed to install package {package} {version_str}, failed to write out {zip.file_path.path}.")
 
 		# extract.
 		if log_level >= 0: loader.mark(new_message=f"Extracting package {package} {version_str}")
@@ -112,18 +112,18 @@ class PackageManager(object):
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] {version_str}, found no packages while extracting.")
+			return Response.error(f"Failed to install package {package} {version_str}, found no packages while extracting.")
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] {version_str}, found multiple packages while extracting.")
+			return Response.error(f"Failed to install package {package} {version_str}, found multiple packages while extracting.")
 		os.system(f"mv {paths[0]} {tmp_dir.file_path.path}")
 		if not tmp_dir.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package [{package}] {version_str}, failed to write out {tmp_dir.file_path.path}.")
+			return Response.error(f"Failed to install package {package} {version_str}, failed to write out {tmp_dir.file_path.path}.")
 
 		# post installation.
 		if post_install not in [None, False, ""]:
@@ -151,24 +151,24 @@ class PackageManager(object):
 				if log_level >= 1: print(output)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package [{package}] {version_str}.")
+				return Response.success(f"Successfully installed package {package} {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package [{package}] {version_str}, failed to run the post installation script output: \n{output}.")
+				return Response.error(f"Failed to install package {package} {version_str}, failed to run the post installation script output: \n{output}.")
 		else:
 			os.system(f"mv {tmp_dir.file_path.path} {library}")
 			if tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop()
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package [{package}] {version_str}.")
+				return Response.success(f"Successfully installed package {package} {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package [{package}] {version_str}, failed to move the library to {library}.")
+				return Response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")
 
 		#
 	def uninstall(self, package, log_level=Defaults.options.log_level):
@@ -189,14 +189,14 @@ class PackageManager(object):
 				except PermissionError: file_path.delete(forced=True, sudo=True)
 			if file_path.exists():
 				if log_level >= 0: loader.stop(success=False)
-				return Response.error(f"Failed to uninstall package [{package}].")
+				return Response.error(f"Failed to uninstall package {package}.")
 
 		# alias.
 		os.system(f"rm -fr /usr/local/bin/{package}")
 
 		# success.
 		if log_level >= 0: loader.stop()
-		return Response.success(f"Successfully uninstalled package [{package}].")
+		return Response.success(f"Successfully uninstalled package {package}.")
 
 		#
 	def update(self, package="all", post_install_args="", log_level=Defaults.options.log_level):
@@ -225,7 +225,7 @@ class PackageManager(object):
 				return Response.error(f"Package {package} is already up-to-date ({version}=={remote_version}).")
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
-			return Response.success(f"Successfully updated package [{package}] ({version}) ==> ({remote_version}).")
+			return Response.success(f"Successfully updated package {package} ({version}) ==> ({remote_version}).")
 	def version(self, package, remote=False, log_level=Defaults.options.log_level):
 		if remote:
 			version = self.packages[package]["version"]
