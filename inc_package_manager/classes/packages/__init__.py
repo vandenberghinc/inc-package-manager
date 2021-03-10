@@ -205,7 +205,7 @@ class PackageManager(object):
 				if self.__installed__(package):
 					response = self.update(package)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
-					elif response.success: c += 1
+					elif response.success and "already up-to-date" not in response.message: c += 1
 			return Response.success(f"Successfully updated {c} package(s).")
 		# update package.
 		else:
