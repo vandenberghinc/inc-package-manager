@@ -28,7 +28,7 @@ class PackageManager(object):
 			version_str = f"({response.version}) ==> ({version})"
 
 		# loader.
-		if log_level >= 0: loader = Console.Loader(f"Preparing package {package} {version_str}")
+		if log_level >= 0: loader = Console.Loader(f"Preparing package installation {package} {version_str}")
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
@@ -44,8 +44,8 @@ class PackageManager(object):
 			if fp.exists():
 				try: os.remove(fp.path)
 				except PermissionError: 
-					print(f"{color.orange}Root permission{color.end} required to reinstall package {package}.")
 					if log_level >= 0: loader.hold()
+					print(f"{color.orange}Root permission{color.end} required to reinstall package {package}.")
 					fp.delete(forced=True, sudo=True)
 					if log_level >= 0: loader.release()
 
@@ -67,7 +67,7 @@ class PackageManager(object):
 
 		# handle status code.
 		if response_object.status_code != 200:
-			return Response.error(f"Failed to install package [{package}] {version_str}, api status code: {response_object.status_code} (/packages/download/).")	
+			return Response.error(f"Failed to install package {package} {version_str} [{response_object.status_code}] (/packages/download/).")	
 
 		# check json applicaton.
 		if "application/json" in response_object.headers["content-type"] :
