@@ -21,11 +21,12 @@ class PackageManager(object):
 		# check & version.
 		response = self.version(package, remote=True, log_level=log_level)
 		if not response.success: return response
-		version = response.version
-		version_str = f"({version})"
+		rversion, lversion = response.version, None
+		version_str = f"({rversion})"
 		response = self.version(package, remote=False, log_level=log_level)
 		if response.success:
-			version_str = f"({response.version}) ==> ({version})"
+			lversion = response.version
+			version_str = f"({lversion}) ==> ({rversion})"
 
 		# loader.
 		if log_level >= 0: loader = Console.Loader(f"Preparing package installation {package} {version_str}")
@@ -133,7 +134,7 @@ class PackageManager(object):
 			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			#if log_level >= 0: loader.release()
 			#command = f"sudo -u {Defaults.vars.user} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
-			os.system('sudo echo "" 2> /dev/null')
+			os.system('sudo echo "" > /dev/null')
 			command = f"bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = dev0s.utils.__execute_script__(command)
 			response = Code.execute(command)
