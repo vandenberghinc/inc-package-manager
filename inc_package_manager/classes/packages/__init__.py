@@ -282,43 +282,16 @@ class PackageManager(object):
 	#
 	# system functions.
 	def __request__(self, url="/", data={}, json=True):
-		def clean_url(url, strip_first=True, strip_last=True, remove_double_slash=True):
-			while True:
-				if strip_last and url[len(url)-1] == "/": url = url[:-1]
-				elif strip_first and url[0] == "/": url = url[1:]
-				elif remove_double_slash and "//" in url: url = url.replace("//","/")
-				else: break
-			return url
-		def encode_data(data):
-			return f"?{urllib.parse.urlencode(data)}"
-			#
 
 		# url.
-		url = f"https://api.vandenberghinc.com/{clean_url(url)}/"
-		if data != {}: url += encode_data(data)
-
-		# request.
-		response_object = requests.get(url, allow_redirects=True)
-		if response_object.status_code != 200:
-			return Response.error(f"Invalid request ({url}) [{response_object.status_code}]: {response_object.text}")
-		if json:
-			#try: response = response_object.json()
-			#except: return Response.error(f"Unable to serialize output: {response_object}, text: {response_object.text}")
-			try: response = Response.ResponseObject(response_object.json())	
-			except: 
-				try: response = Response.ResponseObject(json=response_object.json())
-				except:
-					try:
-						return Response.error(f"Unable to serialze output (json): {response_object.json()}")
-					except:
-						return Response.error(f"Unable to serialze output (txt): {response_object}")
-			return response
-		return response_object
+		url = f"https://api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
+		return Requests.request(url=url, data=data, serialize=json)
 
 		#
 	def __download_packages_info__(self):
 		response = self.__request__("/packages/list/")
 		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
+		print(response)
 		self.packages = response["packages"]
 	def __package_identifier__(self, package):
 		return package.replace(" ","-")
