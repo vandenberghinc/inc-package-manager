@@ -200,13 +200,24 @@ class PackageManager(object):
 	def update(self, package="all", post_install_args="", log_level=Defaults.options.log_level):
 		# update all recursive.
 		if package == "all":
-			c = 0
+			c, u = 0, 0
 			for package, info in self.packages.items():
 				if self.__installed__(package):
 					response = self.update(package)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
-					elif response.success and "already up-to-date" not in response.message: c += 1
-			return Response.success(f"Successfully updated {c} package(s).")
+					elif response.success:
+						if "already up-to-date" in response.message: 
+							u += 1
+						else:
+							c += 1
+			if c == 0 and u == 0:
+				return Response.success(f"Successfully updated {c} package(s).")
+			elif u != 0:
+				return Response.success(f"All {u} installed package(s) are already up-to-date.")
+			elif c != 0:
+				return Response.success(f"Successfully updated {c} package(s).")
+			else:
+				return Response.success(f"There are no packages installed.")
 		# update package.
 		else:
 			# check & version.
