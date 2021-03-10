@@ -284,7 +284,7 @@ class PackageManager(object):
 	def __request__(self, url="/", data={}, json=True):
 
 		# url.
-		url = f"https://api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
+		url = f"api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
 		return Requests.get(url=url, data=data, serialize=json)
 
 		#
