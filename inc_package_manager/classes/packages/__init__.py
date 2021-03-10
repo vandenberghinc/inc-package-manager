@@ -24,11 +24,11 @@ class PackageManager(object):
 		version = response.version
 		version_str = f"({version})"
 		response = self.version(package, remote=False, log_level=log_level)
-		if response.succerss:
+		if response.success:
 			version_str = f"({response.version}) ==> ({version})"
 
 		# loader.
-		if log_level >= 0: loader = Console.Loader(f"Checking package {package} {version_str}")
+		if log_level >= 0: loader = Console.Loader(f"Preparing package {package} {version_str}")
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
