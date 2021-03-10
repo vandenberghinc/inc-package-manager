@@ -133,7 +133,7 @@ class PackageManager(object):
 			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			#if log_level >= 0: loader.release()
 			#command = f"sudo -u {Defaults.vars.user} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
-			os.system('sudo echo ""')
+			os.system('sudo echo "" 2> /dev/null')
 			command = f"bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = dev0s.utils.__execute_script__(command)
 			response = Code.execute(command)
