@@ -285,7 +285,7 @@ class PackageManager(object):
 
 		# url.
 		url = f"https://api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
-		return Requests.request(url=url, data=data, serialize=json)
+		return Requests.get(url=url, data=data, serialize=json)
 
 		#
 	def __download_packages_info__(self):
