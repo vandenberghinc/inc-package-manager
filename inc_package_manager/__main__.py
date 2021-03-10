@@ -50,13 +50,16 @@ class CLI_(CLI.CLI):
 			if api_key != None:
 				package_manager.configuration.dictionary["api_key"] = api_key
 				edits += 1 
+			if edits == 0:
+				loader.stop()
+				os.system(f"nano {package_manager.configuration.fp.path}")
 			if edits > 0:
 				package_manager.configuration.save()
 				loader.stop()
 				self.stop(message=f"Successfully saved {edits} edit(s).", json=Defaults.options.json)
-			else:
-				loader.stop(success=False)
-				self.stop(error=f"Speficy one of the configuration arguments to edit. Run ($ {ALIAS} -h) for more info.", json=Defaults.options.json)
+			#else:
+			#	loader.stop(success=False)
+			#	self.stop(error=f"Speficy one of the configuration arguments to edit. Run ($ {ALIAS} -h) for more info.", json=Defaults.options.json)
 
 		# install a package.
 		elif self.arguments.present('--install'):
