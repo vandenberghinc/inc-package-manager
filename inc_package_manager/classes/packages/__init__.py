@@ -291,7 +291,6 @@ class PackageManager(object):
 	def __download_packages_info__(self):
 		response = self.__request__("/packages/list/")
 		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
-		print(response, response.success, response.success.__class__.__name__)
 		self.packages = response["packages"]
 	def __package_identifier__(self, package):
 		return package.replace(" ","-")
