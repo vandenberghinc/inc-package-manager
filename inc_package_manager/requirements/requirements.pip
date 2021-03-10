@@ -4,5 +4,5 @@
 # inc requirements.
 netw0rk>=1.10.9
 syst3m>=2.18.4
-dev0s>=3.1.9
+dev0s>=3.2.2
 
