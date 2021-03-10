@@ -45,10 +45,10 @@ class PackageManager(object):
 			if fp.exists():
 				try: os.remove(fp.path)
 				except PermissionError: 
-					if log_level >= 0: loader.hold()
+					#if log_level >= 0: loader.hold()
 					print(f"{color.orange}Root permission{color.end} required to reinstall package {package}.")
 					fp.delete(forced=True, sudo=True)
-					if log_level >= 0: loader.release()
+					#if log_level >= 0: loader.release()
 
 		# init zip.
 		zip = Zip(f"/tmp/{package}.zip")
