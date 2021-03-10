@@ -76,7 +76,7 @@ class PackageManager(object):
 			# handle response.
 			try: response = Response.ResponseObject(response_object.json())	
 			except: 
-				try: response = Response.ResponseObject(json=response_object.json())
+				try: response = Response.ResponseObject(response_object.json())
 				except:
 					if log_level >= 0: loader.stop(success=False)
 					try:
