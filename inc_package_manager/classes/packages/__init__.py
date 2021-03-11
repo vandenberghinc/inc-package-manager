@@ -10,13 +10,13 @@ class PackageManager(object):
 		self.packages = {}
 		self.__download_packages_info__() # also tests connection.
 		if not os.path.exists(f"/etc/{ALIAS}"):
-			Response.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
-			os.system(f"sudo mkdir /etc/{ALIAS} && sudo chown {Defaults.vars.user}:{Defaults.vars.group} /etc/{ALIAS} && sudo chmod 770 /etc/{ALIAS}")
+			dev0s.response.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
+			os.system(f"sudo mkdir /etc/{ALIAS} && sudo chown {dev0s.defaults.vars.user}:{dev0s.defaults.vars.group} /etc/{ALIAS} && sudo chmod 770 /etc/{ALIAS}")
 		self.configuration = Dictionary(path=f"/etc/{ALIAS}/config", load=True, default={
 				"api_key":None,
 			})
 		self.api_key = self.configuration.dictionary["api_key"]
-	def install(self, package, post_install_args="", log_level=Defaults.options.log_level):
+	def install(self, package, post_install_args="", log_level=dev0s.defaults.options.log_level):
 		
 		# check & version.
 		response = self.version(package, remote=True, log_level=log_level)
@@ -29,7 +29,7 @@ class PackageManager(object):
 			version_str = f"({lversion}) ==> ({rversion})"
 
 		# loader.
-		if log_level >= 0: loader = Console.Loader(f"Preparing package installation {package} {version_str}")
+		if log_level >= 0: loader = dev0s.console.Loader(f"Preparing package installation {package} {version_str}")
 
 		# package settings.
 		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
@@ -37,7 +37,7 @@ class PackageManager(object):
 		# check api key.
 		if not free and self.api_key == None:
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Specify your vandenberghinc api key to install library {package}, execute [$ {ALIAS} --config --api-key your-api-key].")
+			return dev0s.response.error(f"Specify your vandenberghinc api key to install library {package}, execute [$ {ALIAS} --config --api-key your-api-key].")
 
 		# install package.
 		if post_install in [None, False, ""]:
@@ -68,30 +68,30 @@ class PackageManager(object):
 
 		# handle status code.
 		if response_object.status_code != 200:
-			return Response.error(f"Failed to install package {package} {version_str} [{response_object.status_code}] (/packages/download/).")	
+			return dev0s.response.error(f"Failed to install package {package} {version_str} [{response_object.status_code}] (/packages/download/).")	
 
 		# check json applicaton.
 		if "application/json" in response_object.headers["content-type"] :
 
 			# handle response.
-			try: response = Response.ResponseObject(response_object.json())	
+			try: response = dev0s.response.ResponseObject(response_object.json())	
 			except: 
-				try: response = Response.ResponseObject(response_object.json())
+				try: response = dev0s.response.ResponseObject(response_object.json())
 				except:
 					if log_level >= 0: loader.stop(success=False)
 					try:
-						return Response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (json): {response_object.json()}")
+						return dev0s.response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (json): {response_object.json()}")
 					except:
-						return Response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (txt): {response_object.txt}")
+						return dev0s.response.error(f"Failed to install package {package} {version_str}. Unable to serialze output (txt): {response_object.txt}")
 			if log_level >= 0: loader.stop(success=response["success"])
 			return response	
 			#if not response.success:
 			#	if log_level >= 0: loader.stop(success=False)
-			#	return Response.error(f"Failed to install package {package}, error: {response['error']}")	
+			#	return dev0s.response.error(f"Failed to install package {package}, error: {response['error']}")	
 
 		# check unkown applicaton.
 		elif "application/force-download" not in response_object.headers["content-type"]:
-			return Response.error(f"Failed to install package {package} {version_str}, unkown response application: {response_object.headers['content-type']}")	
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, unkown response application: {response_object.headers['content-type']}")	
 
 		# write out.
 		if log_level >= 0: loader.mark(new_message=f"Writing out package {package} {version_str}")
@@ -99,10 +99,10 @@ class PackageManager(object):
 			open(zip.file_path.path, 'wb').write(response_object.content)
 		except Exception as e:
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package {package} {version_str}, error: {e}.")	
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, error: {e}.")	
 		if not zip.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
-			return Response.error(f"Failed to install package {package} {version_str}, failed to write out {zip.file_path.path}.")
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to write out {zip.file_path.path}.")
 
 		# extract.
 		if log_level >= 0: loader.mark(new_message=f"Extracting package {package} {version_str}")
@@ -112,18 +112,18 @@ class PackageManager(object):
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package {package} {version_str}, found no packages while extracting.")
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, found no packages while extracting.")
 		elif len(paths) > 1:
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package {package} {version_str}, found multiple packages while extracting.")
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, found multiple packages while extracting.")
 		os.system(f"mv {paths[0]} {tmp_dir.file_path.path}")
 		if not tmp_dir.file_path.exists():
 			if log_level >= 0: loader.stop(success=False)
 			extract_dir.fp.delete(forced=True)
 			tmp_dir.fp.delete(forced=True)
-			return Response.error(f"Failed to install package {package} {version_str}, failed to write out {tmp_dir.file_path.path}.")
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to write out {tmp_dir.file_path.path}.")
 
 		# post installation.
 		if post_install not in [None, False, ""]:
@@ -133,11 +133,11 @@ class PackageManager(object):
 			#if log_level >= 0: loader.hold()
 			#os.system("sudo ls | grep ASJKBKJBkjuiyy89y23smndbKUy3hkjNMADBhje")
 			#if log_level >= 0: loader.release()
-			#command = f"sudo -u {Defaults.vars.user} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
+			#command = f"sudo -u {dev0s.defaults.vars.user} bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			os.system('sudo echo "" > /dev/null')
 			command = f"bash {tmp_dir.file_path.path}{post_install} {post_install_args}"
 			#output = dev0s.utils.__execute_script__(command)
-			response = Code.execute(command)
+			response = dev0s.code.execute(command)
 			if not response.success: 
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
@@ -149,27 +149,27 @@ class PackageManager(object):
 				if log_level >= 1: print(output)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package {package} {version_str}.")
+				return dev0s.response.success(f"Successfully installed package {package} {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package {package} {version_str}, failed to run the post installation script output: \n{output}.")
+				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to run the post installation script output: \n{output}.")
 		else:
 			os.system(f"mv {tmp_dir.file_path.path} {library}")
 			if tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop()
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.success(f"Successfully installed package {package} {version_str}.")
+				return dev0s.response.success(f"Successfully installed package {package} {version_str}.")
 			else:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return Response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")
+				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")
 
 		#
-	def uninstall(self, package, log_level=Defaults.options.log_level):
+	def uninstall(self, package, log_level=dev0s.defaults.options.log_level):
 
 		# check & version.
 		response = self.version(package, log_level=log_level)
@@ -177,7 +177,7 @@ class PackageManager(object):
 		version = response.version
 
 		# loader.
-		if log_level >= 0: loader = Console.Loader(f"Uninstalling package {package} ({version})")
+		if log_level >= 0: loader = dev0s.console.Loader(f"Uninstalling package {package} ({version})")
 
 		# delete package.
 		if self.packages[package]["library"] not in ["", None, False]:
@@ -187,17 +187,17 @@ class PackageManager(object):
 				except PermissionError: file_path.delete(forced=True, sudo=True)
 			if file_path.exists():
 				if log_level >= 0: loader.stop(success=False)
-				return Response.error(f"Failed to uninstall package {package}.")
+				return dev0s.response.error(f"Failed to uninstall package {package}.")
 
 		# alias.
 		os.system(f"rm -fr /usr/local/bin/{package}")
 
 		# success.
 		if log_level >= 0: loader.stop()
-		return Response.success(f"Successfully uninstalled package {package}.")
+		return dev0s.response.success(f"Successfully uninstalled package {package}.")
 
 		#
-	def update(self, package="all", post_install_args="", log_level=Defaults.options.log_level):
+	def update(self, package="all", post_install_args="", log_level=dev0s.defaults.options.log_level):
 		# update all recursive.
 		if package == "all":
 			c, u = 0, 0
@@ -211,18 +211,18 @@ class PackageManager(object):
 						else:
 							c += 1
 			if c != 0 and u != 0:
-				return Response.success(f"Successfully updated {c} package(s).")
+				return dev0s.response.success(f"Successfully updated {c} package(s).")
 			elif c != 0:
-				return Response.success(f"Successfully updated {c} package(s).")
+				return dev0s.response.success(f"Successfully updated {c} package(s).")
 			elif u != 0:
-				return Response.success(f"All {u} installed package(s) are already up-to-date.")
+				return dev0s.response.success(f"All {u} installed package(s) are already up-to-date.")
 			else:
-				return Response.success(f"There are no packages installed.")
+				return dev0s.response.success(f"There are no packages installed.")
 		# update package.
 		else:
 			# check & version.
 			if not self.__installed__(package):
-				return Response.error(f"Package [{package} is not installed.")
+				return dev0s.response.error(f"Package [{package} is not installed.")
 			response = self.version(package, log_level=log_level)
 			if not response.success: return response
 			version = response.version
@@ -231,11 +231,11 @@ class PackageManager(object):
 				return response
 			remote_version = response.version
 			if version == remote_version:
-				return Response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
+				return dev0s.response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
 			response = self.install(package, post_install_args=post_install_args)
 			if response["error"] != None: return response
-			return Response.success(f"Successfully updated package {package} ({version}) ==> ({remote_version}).")
-	def version(self, package, remote=False, log_level=Defaults.options.log_level):
+			return dev0s.response.success(f"Successfully updated package {package} ({version}) ==> ({remote_version}).")
+	def version(self, package, remote=False, log_level=dev0s.defaults.options.log_level):
 		if remote:
 			version = self.packages[package]["version"]
 			remote = "remote "
@@ -243,30 +243,30 @@ class PackageManager(object):
 			remote = ""
 			package = self.__package_identifier__(package)
 			if package not in list(self.packages.keys()):
-				return Response.error(f"Specified package [{package} does not exist.")
+				return dev0s.response.error(f"Specified package [{package} does not exist.")
 			if package in [ALIAS, ALIAS.replace("-","_")]:
 				path = f'{SOURCE}/.version'
 				if not Files.exists(path):
-					return Response.error(f"Failed to retrieve the version of package {package}.")
+					return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
 				path = f'{self.packages[package]["library"]}/.version'
 				if not Files.exists(path):
-					return Response.error(f"Failed to retrieve the version of package {package} [{path}].")
+					return dev0s.response.error(f"Failed to retrieve the version of package {package} [{path}].")
 				version = Files.load(path).replace("\n","")
 			else:
-				return Response.error(f"Failed to retrieve the version of package {package}.")
+				return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
 		# handler.
-		return Response.success(f"Successfully retrieved the {remote}version of package {package}.", {
+		return dev0s.response.success(f"Successfully retrieved the {remote}version of package {package}.", {
 			"version":version,
 		})
 	def up_to_date(self, package):
 		self.__download_packages_info__()
 		package = self.__package_identifier__(package)
 		if package not in list(self.packages.keys()):
-			return Response.error(f"Package [{package} does not exist.")
+			return dev0s.response.error(f"Package [{package} does not exist.")
 		if not self.__installed__(package):
-			return Response.error(f"Package [{package} is not installed.")
+			return dev0s.response.error(f"Package [{package} is not installed.")
 		response = self.version(package, remote=True)
 		if response["error"] != None: return response
 		remote_version = response.version
@@ -274,7 +274,7 @@ class PackageManager(object):
 		if response["error"] != None: 
 			return response
 		up_to_date = response.version == remote_version
-		return Response.success(f"Successfully compared the versions of package {package}.", {
+		return dev0s.response.success(f"Successfully compared the versions of package {package}.", {
 			"up_to_date":up_to_date,
 			"current_version":response.version,
 			"remote_version":remote_version,
@@ -285,7 +285,7 @@ class PackageManager(object):
 
 		# url.
 		url = f"api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
-		return Requests.get(url=url, data=data, serialize=json)
+		return dev0s.requests.get(url=url, data=data, serialize=json)
 
 		#
 	def __download_packages_info__(self):
