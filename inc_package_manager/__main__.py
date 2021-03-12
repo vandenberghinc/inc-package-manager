@@ -36,7 +36,7 @@ class CLI(dev0s.cli.CLI):
 	def start(self):
 
 		# check arguments.
-		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version", "--remote"], json=dev0s.defaults.options.json)
+		self.arguments.check(exceptions=["--log-level", "--create-alias", "--version", "--remote", "--unstable"], json=dev0s.defaults.options.json)
 
 		# help.
 		if self.arguments.present(['-h', '--help']):

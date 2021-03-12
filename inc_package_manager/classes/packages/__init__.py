@@ -336,8 +336,8 @@ class PackageManager(object):
 			# check & version.
 			response = self.installed(package)
 			if not response.success: return response
-			elif response.installed:
-				return dev0s.response.error(f"Package [{package} is not installed.")
+			elif not response.installed:
+				return dev0s.response.error(f"Package [{package}] is not installed.")
 			response = self.version(package, log_level=log_level, stable=stable)
 			if not response.success: return response
 			version = response.version
@@ -363,8 +363,8 @@ class PackageManager(object):
 	):
 		response = self.installed(package)
 		if not response.success: return response
-		elif response.installed:
-			return dev0s.response.error(f"Package [{package} is not installed.")
+		elif not response.installed:
+			return dev0s.response.error(f"Package [{package}] is not installed.")
 		self.__download_packages_info__()
 		response = self.version(package, remote=True, stable=stable, log_level=log_level)
 		if response["error"] != None: return response
