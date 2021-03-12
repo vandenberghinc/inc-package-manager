@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # insert the package for universal imports.
-import os, sys, 
+import os, sys
 from dev0s.shortcuts import * ; sys.path.insert(1, dev0s.defaults.source_path(__file__, back=2))
 from inc_package_manager.classes.config import *
 from inc_package_manager import package_manager
