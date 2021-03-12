@@ -8,11 +8,6 @@ from inc_package_manager.classes.config import *
 class PackageManager(object):
 	def __init__(self):	
 
-		# remote info.
-		self.packages = {}
-		self.versions = {}
-		self.__download_packages_info__() # also tests connection.
-
 		# checks.
 		if not os.path.exists(f"/etc/{ALIAS}"):
 			dev0s.response.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
@@ -25,6 +20,11 @@ class PackageManager(object):
 
 		# api key (do not make it a property).
 		self.api_key = self.configuration.dictionary["api_key"]
+
+		# remote info.
+		self.packages = {}
+		self.versions = {}
+		self.__download_packages_info__() # also tests connection.
 
 		#
 
@@ -297,7 +297,7 @@ class PackageManager(object):
 		})
 
 		#
-		
+
 	# updating packages.
 	def update(self, 
 		# the package id (str) (#1).
