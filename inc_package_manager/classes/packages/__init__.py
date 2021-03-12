@@ -7,21 +7,60 @@ from inc_package_manager.classes.config import *
 # the manager class.
 class PackageManager(object):
 	def __init__(self):	
+
+		# remote info.
 		self.packages = {}
+		self.versions = {}
 		self.__download_packages_info__() # also tests connection.
+
+		# checks.
 		if not os.path.exists(f"/etc/{ALIAS}"):
 			dev0s.response.log(f"&ORANGE&Root permission&END& required to create {ALIAS} database [/etc/{ALIAS}].")
 			os.system(f"sudo mkdir /etc/{ALIAS} && sudo chown {dev0s.defaults.vars.user}:{dev0s.defaults.vars.group} /etc/{ALIAS} && sudo chmod 770 /etc/{ALIAS}")
+
+		# config.
 		self.configuration = Dictionary(path=f"/etc/{ALIAS}/config", load=True, default={
 				"api_key":None,
 			})
+
+		# api key (do not make it a property).
 		self.api_key = self.configuration.dictionary["api_key"]
-	def install(self, package, post_install_args="", log_level=dev0s.defaults.options.log_level):
+
+		#
+
+	# installating packages.
+	def installed(self, package):
+		package = self.__package_identifier__(package)
+		if package not in list(self.packages.keys()):
+			return dev0s.response.error(f"Package [{package} does not exist.")
+		if package in [ALIAS, ALIAS.replace("-","_")]:
+			installed = True
+		elif self.packages[package]["library"] not in ["", None, False]:
+			path = self.packages[package]["library"]
+			installed = Files.exists(path)
+		else:
+			return dev0s.response.error(f"Unable to determine if package {package} is installed.")
+		return dev0s.response.success(f"Successfully checked if package [{package}] is installed.", {
+			"installed":installed,
+		})
+	def install(self, 
+		# the package id (str) (#1).
+		package, 
+		# the post install arguments (str).
+		post_install_args="", 
+		# stable or unstable release (bool).
+		stable=True, 
+		# specific version (str) (leave None to use the lastest).
+		version=None, 
+		# the log levenl (int).
+		log_level=dev0s.defaults.options.log_level,
+	):
 		
 		# check & version.
 		response = self.version(package, remote=True, log_level=log_level)
 		if not response.success: return response
 		rversion, lversion = response.version, None
+		if version != None: rversion = version
 		version_str = f"({rversion})"
 		response = self.version(package, remote=False, log_level=log_level)
 		if response.success:
@@ -60,10 +99,10 @@ class PackageManager(object):
 
 		# make request.
 		if log_level >= 0: loader.mark(new_message=f"Downloading package {package} {version_str}")
-		response_object = self.__request__("/packages/download/", {
+		response_object = self.request("/packages/download/", {
 			"package":package,
-			"format":"zip",
-			"api_key":self.api_key,
+			"stable":stable,
+			"version":version,
 		}, json=False)
 
 		# handle status code.
@@ -169,7 +208,14 @@ class PackageManager(object):
 				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")
 
 		#
-	def uninstall(self, package, log_level=dev0s.defaults.options.log_level):
+
+	# uninstalling packages.
+	def uninstall(self, 
+		# the package id (str) (#1).
+		package, 
+		# the log levenl (int).
+		log_level=dev0s.defaults.options.log_level,
+	):
 
 		# check & version.
 		response = self.version(package, log_level=log_level)
@@ -197,13 +243,80 @@ class PackageManager(object):
 		return dev0s.response.success(f"Successfully uninstalled package {package}.")
 
 		#
-	def update(self, package="all", post_install_args="", log_level=dev0s.defaults.options.log_level):
+
+	# get the package version.
+	def version(self, 
+		# the package id (str) (#1).
+		package, 
+		# the remote or local version (bool) (remote False ignores parameter [stable]).
+		remote=False, 
+		# stable or unstable release (bool).
+		stable=True, 
+		# the log levenl (int).
+		log_level=dev0s.defaults.options.log_level,
+	):
+		# checks.
+		package = self.__package_identifier__(package)
+		if package not in list(self.packages.keys()):
+			return dev0s.response.error(f"Specified package [{package} does not exist.")
+
+		# remote.
+		if remote:
+			remote_str = "remote "
+
+			# stable.
+			if stable:
+				stable_str = "stable "
+				version = self.versions["unstable"][package]["newest"]
+
+			# unstable.
+			else:
+				stable_str = ""
+				version = self.versions["unstable"][package]["newest"]
+
+		# local.
+		else:
+			stable_str = ""
+			remote_str = ""
+			if package in [ALIAS, ALIAS.replace("-","_")]:
+				path = f'{SOURCE}/.version'
+				if not Files.exists(path):
+					return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
+				version = Files.load(path).replace("\n","")
+			elif self.packages[package]["library"] not in ["", False, None]:
+				path = f'{self.packages[package]["library"]}/.version'
+				if not Files.exists(path):
+					return dev0s.response.error(f"Failed to retrieve the version of package {package} [{path}].")
+				version = Files.load(path).replace("\n","")
+			else:
+				return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
+
+		# handler.
+		return dev0s.response.success(f"Successfully retrieved the {stable_str}{remote_str}version of package {package}.", {
+			"version":version,
+		})
+
+		#
+		
+	# updating packages.
+	def update(self, 
+		# the package id (str) (#1).
+		package="all", 
+		# the post install arguments (str).
+		post_install_args="", 
+		# stable or unstable release (bool).
+		stable=True, 
+		# the log levenl (int).
+		log_level=dev0s.defaults.options.log_level,
+	):
 		# update all recursive.
 		if package == "all":
 			c, u = 0, 0
 			for package, info in self.packages.items():
-				if self.__installed__(package):
-					response = self.update(package)
+				response = self.installed(package)
+				if not response.success: return response
+				elif response.installed:
+					response = self.update(package, stable=stable)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
 					elif response.success:
 						if "already up-to-date" in response.message: 
@@ -221,56 +334,42 @@ class PackageManager(object):
 		# update package.
 		else:
 			# check & version.
-			if not self.__installed__(package):
+			response = self.installed(package)
+			if not response.success: return response
+			elif response.installed:
 				return dev0s.response.error(f"Package [{package} is not installed.")
-			response = self.version(package, log_level=log_level)
+			response = self.version(package, log_level=log_level, stable=stable)
 			if not response.success: return response
 			version = response.version
-			response = self.version(package, remote=True)
+			response = self.version(package, remote=True, stable=stable)
 			if response["error"] != None: 
 				return response
 			remote_version = response.version
 			if version == remote_version:
 				return dev0s.response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
-			response = self.install(package, post_install_args=post_install_args)
+			response = self.install(package, post_install_args=post_install_args, stable=stable)
 			if response["error"] != None: return response
 			return dev0s.response.success(f"Successfully updated package {package} ({version}) ==> ({remote_version}).")
-	def version(self, package, remote=False, log_level=dev0s.defaults.options.log_level):
-		if remote:
-			version = self.packages[package]["version"]
-			remote = "remote "
-		else:
-			remote = ""
-			package = self.__package_identifier__(package)
-			if package not in list(self.packages.keys()):
-				return dev0s.response.error(f"Specified package [{package} does not exist.")
-			if package in [ALIAS, ALIAS.replace("-","_")]:
-				path = f'{SOURCE}/.version'
-				if not Files.exists(path):
-					return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
-				version = Files.load(path).replace("\n","")
-			elif self.packages[package]["library"] not in ["", False, None]:
-				path = f'{self.packages[package]["library"]}/.version'
-				if not Files.exists(path):
-					return dev0s.response.error(f"Failed to retrieve the version of package {package} [{path}].")
-				version = Files.load(path).replace("\n","")
-			else:
-				return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
-		# handler.
-		return dev0s.response.success(f"Successfully retrieved the {remote}version of package {package}.", {
-			"version":version,
-		})
-	def up_to_date(self, package):
-		self.__download_packages_info__()
-		package = self.__package_identifier__(package)
-		if package not in list(self.packages.keys()):
-			return dev0s.response.error(f"Package [{package} does not exist.")
-		if not self.__installed__(package):
+
+	# reloads the remote packages info.
+	def up_to_date(self,
+		# the package id (str) (#1). 
+		package,
+		# stable or unstable release (bool).
+		stable=True, 
+		# the log levenl (int).
+		log_level=dev0s.defaults.options.log_level,
+		# 
+	):
+		response = self.installed(package)
+		if not response.success: return response
+		elif response.installed:
 			return dev0s.response.error(f"Package [{package} is not installed.")
-		response = self.version(package, remote=True)
+		self.__download_packages_info__()
+		response = self.version(package, remote=True, stable=stable, log_level=log_level)
 		if response["error"] != None: return response
 		remote_version = response.version
-		response = self.version(package, remote=False)
+		response = self.version(package, remote=False, stable=stable, log_level=log_level)
 		if response["error"] != None: 
 			return response
 		up_to_date = response.version == remote_version
@@ -278,34 +377,35 @@ class PackageManager(object):
 			"up_to_date":up_to_date,
 			"current_version":response.version,
 			"remote_version":remote_version,
+			"stable":stable,
 		})
-	#
-	# system functions.
-	def __request__(self, url="/", data={}, json=True):
+
+	# make api.vandenberghinc.com request.
+	def request(self, url="/", data={}, json=True):
 
 		# url.
 		url = f"api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
+		data["api_key"] = self.api_key
 		return dev0s.requests.get(url=url, data=data, serialize=json)
 
 		#
-	def __download_packages_info__(self):
-		response = self.__request__("/packages/list/")
-		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
-		self.packages = response["packages"]
+
+	# system functions.
 	def __package_identifier__(self, package):
 		return package.replace(" ","-")
 		#
-	def __installed__(self, package):
-		if package in [ALIAS, ALIAS.replace("-","_")]:
-			return True
-		elif self.packages[package]["library"] not in ["", None, False]:
-			path = self.packages[package]["library"]
-			while True:
-				if len(path) > 0 and path[len(path)-1] == "/": path = path[:-1]
-				else: break
-			return Files.exists(path)
-		else:
-			raise ValueError(f"Unable to determine if package {package} is installed.")
+	def __download_packages_info__(self):
+		response = self.request("/packages/list/")
+		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
+		self.packages = response["packages"]
+		response = self.request("/packages/versions/", {"stable":False})
+		if not response.success: raise ValueError(f"Failed to download stable vandenberghinc versions, error: {response['error']}")
+		self.versions["unstable"] = response.versions
+		response = self.request("/packages/versions/", {"stable":True})
+		if not response.success: raise ValueError(f"Failed to download unstable vandenberghinc versions, error: {response['error']}")
+		self.versions["stable"] = response.versions
+
+	#
 
 # initialized class.
 package_manager = PackageManager()
