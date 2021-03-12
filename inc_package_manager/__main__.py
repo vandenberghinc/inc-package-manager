@@ -63,26 +63,26 @@ class CLI(dev0s.cli.CLI):
 
 		# install a package.
 		elif self.arguments.present('--install'):
-			self.stop(response=package_manager.install(self.arguments.get('--install')), json=dev0s.defaults.options.json)
+			self.stop(response=package_manager.install(self.arguments.get('--install'), stable=not self.arguments.present("--unstable")), json=dev0s.defaults.options.json)
 
 		# uninstall a package.
 		elif self.arguments.present('--uninstall'):
 			package = self.arguments.get('--uninstall', json=dev0s.defaults.options.json)
 			if not self.arguments.present(["-y", "--assume-yes"]) and not dev0s.defaults.options.json and not dev0s.console.input(f"&ORANGE&Warning!&END& You are uninstalling package {_package_}. Do you wish to proceed?", yes_no=True):
 				self.stop(message="Aborted.")
-			self.stop(response=package_manager.uninstall(package), json=dev0s.defaults.options.json)
+			self.stop(response=package_manager.uninstall(package, stable=not self.arguments.present("--unstable")), json=dev0s.defaults.options.json)
 
 		# update a package.
 		elif self.arguments.present('--update'):
 			package = self.arguments.get('--update', required=False, json=dev0s.defaults.options.json)
 			if package == None: package = "all"
-			self.stop(response=package_manager.update(package), json=dev0s.defaults.options.json)
+			self.stop(response=package_manager.update(package, stable=not self.arguments.present("--unstable")), json=dev0s.defaults.options.json)
 
 		# get the version of a package.
 		elif self.arguments.present(['--version', "--requirements"]):
 			package = self.arguments.get('--version', json=dev0s.defaults.options.json)
 			remote = self.arguments.present("--remote")
-			response = package_manager.version(package)
+			response = package_manager.version(package, stable=not self.arguments.present("--unstable"))
 			if not response["success"]:
 				self.stop(response=response, json=dev0s.defaults.options.json)
 			else:
