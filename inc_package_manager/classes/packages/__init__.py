@@ -347,10 +347,10 @@ class PackageManager(object):
 			remote_version = response.version
 			if version == remote_version:
 				if dev0s.defaults.options.log_level >= 1: 
-					dev0s.response.log(f"Package {package}  (version: {version}) (remote version: {remote_version}).")
+					dev0s.response.log(f"Package {package} (version: {version}) (remote version: {remote_version}) (stable: {stable}).")
 				return dev0s.response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
 			elif dev0s.defaults.options.log_level >= 1: 
-				dev0s.response.log(f"Package {package} is not up-to-date ({version}=={remote_version}).")
+				dev0s.response.log(f"Package {package} is not up-to-date ({version}=={remote_version}) (stable: {stable}).")
 
 			response = self.install(package, post_install_args=post_install_args, stable=stable)
 			if response["error"] != None: return response
