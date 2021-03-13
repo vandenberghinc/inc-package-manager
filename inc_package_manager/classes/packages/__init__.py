@@ -386,7 +386,7 @@ class PackageManager(object):
 		response = self.version(package, remote=False, stable=stable, log_level=log_level)
 		if response["error"] != None: 
 			return response
-		up_to_date = Version(version) >= Version(remote_version):
+		up_to_date = Version(version) >= Version(remote_version)
 		return dev0s.response.success(f"Successfully compared the versions of package {package}.", {
 			"up_to_date":up_to_date,
 			"current_version":response.version,
