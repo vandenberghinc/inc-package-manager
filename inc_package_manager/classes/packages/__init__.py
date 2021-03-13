@@ -267,7 +267,7 @@ class PackageManager(object):
 			# stable.
 			if stable:
 				stable_str = "stable "
-				version = self.versions["unstable"][package]["newest"]
+				version = self.versions["stable"][package]["newest"]
 
 			# unstable.
 			else:
