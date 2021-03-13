@@ -4,6 +4,15 @@
 # imports.
 from inc_package_manager.classes.config import *
 
+"""
+dev0s traceback:
+	* Code, Files, Formats
+	* dev0s.defaults
+	* dev0s.response
+	* dev0s.requests
+	* dev0s.cli
+"""
+
 # the manager class.
 class PackageManager(object):
 	def __init__(self):	
@@ -345,7 +354,7 @@ class PackageManager(object):
 			if response["error"] != None: 
 				return response
 			remote_version = response.version
-			if version == remote_version:
+			if Version(version) >= Version(remote_version):
 				if dev0s.defaults.options.log_level >= 1: 
 					dev0s.response.log(f"Package {package} (version: {version}) (remote version: {remote_version}) (stable: {stable}).")
 				return dev0s.response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
@@ -377,7 +386,7 @@ class PackageManager(object):
 		response = self.version(package, remote=False, stable=stable, log_level=log_level)
 		if response["error"] != None: 
 			return response
-		up_to_date = response.version == remote_version
+		up_to_date = Version(version) >= Version(remote_version):
 		return dev0s.response.success(f"Successfully compared the versions of package {package}.", {
 			"up_to_date":up_to_date,
 			"current_version":response.version,
