@@ -38,17 +38,38 @@ class PackageManager(object):
 		#
 
 	# installating packages.
-	def installed(self, package):
+	def installed(self, 
+		# the package id (str) (#1).
+		package,
+		# stable or unstable release (bool).
+		stable=True, 
+		# specific version (str) (leave None to use the lastest).
+		version=None, 
+		# the python venv to install the package in (str, FilePath) (leave None to ignore).
+		venv=None,
+		# the log level.
+		log_level=dev0s.defaults.options.log_level,
+	):
 		package = self.__package_identifier__(package)
 		if package not in list(self.packages.keys()):
 			return dev0s.response.error(f"Package [{package} does not exist.")
-		if package in [ALIAS, ALIAS.replace("-","_")]:
-			installed = True
-		elif self.packages[package]["library"] not in ["", None, False]:
-			path = self.packages[package]["library"]
-			installed = Files.exists(path)
+		if version != None or venv != None:
+			response = self.version(package, stable=stable, venv=venv)
+			if not response.success: 
+				if "is not installed" in response.error:
+					installed = False
+				else:
+					return response
+			else:
+				installed = version == response.version
 		else:
-			return dev0s.response.error(f"Unable to determine if package {package} is installed.")
+			if package in [ALIAS, ALIAS.replace("-","_")]:
+				installed = True
+			elif self.packages[package]["library"] not in ["", None, False]:
+				path = self.packages[package]["library"]
+				installed = Files.exists(path)
+			else:
+				return dev0s.response.error(f"Unable to determine if package {package} is installed.")
 		return dev0s.response.success(f"Successfully checked if package [{package}] is installed.", {
 			"installed":installed,
 		})
@@ -61,6 +82,8 @@ class PackageManager(object):
 		stable=True, 
 		# specific version (str) (leave None to use the lastest).
 		version=None, 
+		# the python venv to install the package in (str, FilePath) (leave None to ignore).
+		venv=None,
 		# the log levenl (int).
 		log_level=dev0s.defaults.options.log_level,
 	):
@@ -68,19 +91,22 @@ class PackageManager(object):
 		# check & version.
 		response = self.version(package, remote=True, log_level=log_level)
 		if not response.success: return response
-		rversion, lversion = response.version, None
+		rversion = response.version
 		if version != None: rversion = version
 		version_str = f"({rversion})"
-		response = self.version(package, remote=False, log_level=log_level)
-		if response.success:
-			lversion = response.version
-			version_str = f"({lversion}) ==> ({rversion})"
+		if version != None:
+			version_str = f"({lversion}) ==> ({version})"
+		else:
+			response = self.version(package, remote=False, venv=venv, log_level=log_level)
+			if response.success:
+				lversion = response.version
+				version_str = f"({lversion}) ==> ({rversion})"
 
 		# loader.
 		if log_level >= 0: loader = dev0s.console.Loader(f"Preparing package installation {package} {version_str}")
 
 		# package settings.
-		free, library, post_install = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"]
+		free, library, post_install, pypi = self.packages[package]["free"], self.packages[package]["library"], self.packages[package]["post_install"], self.packages[package]["pypi"]
 
 		# check api key.
 		if not free and self.api_key == None:
@@ -173,7 +199,7 @@ class PackageManager(object):
 			tmp_dir.fp.delete(forced=True)
 			return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to write out {tmp_dir.file_path.path}.")
 
-		# post installation.
+		# post installation so no library move required.
 		if post_install not in [None, False, ""]:
 			if log_level >= 0: loader.mark(new_message=f"Executing post installation script of package {package} {version_str}")
 			os.system(f'chmod +x {tmp_dir.file_path.path}{post_install}')
@@ -192,29 +218,55 @@ class PackageManager(object):
 				tmp_dir.fp.delete(forced=True)
 				return response
 			output = response.output
-			if "Successfully installed " in output:
-				if log_level >= 0: loader.stop()
-				if log_level >= 1: print(output)
-				extract_dir.fp.delete(forced=True)
-				tmp_dir.fp.delete(forced=True)
-				return dev0s.response.success(f"Successfully installed package {package} {version_str}.")
-			else:
+			if not "Successfully installed " in output:
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
 				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to run the post installation script output: \n{output}.")
+		
+		# no post installation so move library.	
 		else:
 			os.system(f"mv {tmp_dir.file_path.path} {library}")
-			if tmp_dir.file_path.exists():
-				if log_level >= 0: loader.stop()
-				extract_dir.fp.delete(forced=True)
-				tmp_dir.fp.delete(forced=True)
-				return dev0s.response.success(f"Successfully installed package {package} {version_str}.")
-			else:
+			if not tmp_dir.file_path.exists():
 				if log_level >= 0: loader.stop(success=False)
 				extract_dir.fp.delete(forced=True)
 				tmp_dir.fp.delete(forced=True)
-				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")
+				return dev0s.response.error(f"Failed to install package {package} {version_str}, failed to move the library to {library}.")	
+
+		# install venv.
+		if venv != None and (library not in [None, False, ""] or pypi):
+			if log_level >= 0: loader.mark(new_message=f"Installing package {package} {version_str} into virtual env [{env}]")
+			venv = str(venv)
+			if not Files.exists(venv):
+				extract_dir.fp.delete(forced=True)
+				tmp_dir.fp.delete(forced=True)
+				return dev0s.response.error(f"Specified python venv [{venv}] does not exist.")
+			if not Files.exists(Files.join(venv, "lib")): Files.create(Files.join(venv, "lib"), directory=True)
+
+			# install into venv
+			if library not in [None, False, ""]:
+				response = dev0s.code.execute(f"rsynz -az --delete {gfp.clean(library, remove_last_slash=True)}/ {gfp.clean(venv, remove_last_slash=True)}/lib/{package}/")
+				if not response.success: 
+					if log_level >= 0: loader.stop(success=False)
+					extract_dir.fp.delete(forced=True)
+					tmp_dir.fp.delete(forced=True)
+					return response
+
+			# install pip.
+			if pypi:
+				response = dev0s.code.execute(f"{venv}/bin/pip3 install {tmp_dir} --user {dev0s.defaults.user}")
+				if not response.success: 
+					if log_level >= 0: loader.stop(success=False)
+					extract_dir.fp.delete(forced=True)
+					tmp_dir.fp.delete(forced=True)
+					return response
+
+		# success.
+		if log_level >= 0: loader.stop()
+		if log_level >= 1: print(output)
+		extract_dir.fp.delete(forced=True)
+		tmp_dir.fp.delete(forced=True)
+		return dev0s.response.success(f"Successfully installed package {package} {version_str}.")
 
 		#
 
@@ -222,21 +274,30 @@ class PackageManager(object):
 	def uninstall(self, 
 		# the package id (str) (#1).
 		package, 
+		# the python venv to install the package in (str, FilePath) (leave None to ignore).
+		venv=None,
 		# the log levenl (int).
 		log_level=dev0s.defaults.options.log_level,
 	):
 
 		# check & version.
-		response = self.version(package, log_level=log_level)
+		response = self.version(package, venv=venv, log_level=log_level)
 		if not response.success: return response
 		version = response.version
 
 		# loader.
 		if log_level >= 0: loader = dev0s.console.Loader(f"Uninstalling package {package} ({version})")
 
-		# delete package.
-		if self.packages[package]["library"] not in ["", None, False]:
-			file_path = FilePath(self.packages[package]["library"])
+		# set paths.
+		paths = []
+		if venv != None:
+			paths.append(f"{venv}/lib/{package}")
+		elif self.packages[package]["library"] not in ["", None, False]:
+			paths.append(self.packages[package]["library"])
+
+		# delete paths.
+		for path in []:
+			file_path = FilePath(path)
 			if file_path.exists():
 				try: os.remove(file_path.path)
 				except PermissionError: file_path.delete(forced=True, sudo=True)
@@ -246,6 +307,7 @@ class PackageManager(object):
 
 		# alias.
 		os.system(f"rm -fr /usr/local/bin/{package}")
+		os.system(f"rm -fr {venv}/bin/{package}")
 
 		# success.
 		if log_level >= 0: loader.stop()
@@ -261,6 +323,8 @@ class PackageManager(object):
 		remote=False, 
 		# stable or unstable release (bool).
 		stable=True, 
+		# the python venv to install the package in (str, FilePath) (leave None to ignore).
+		venv=None,
 		# the log levenl (int).
 		log_level=dev0s.defaults.options.log_level,
 	):
@@ -293,7 +357,10 @@ class PackageManager(object):
 					return dev0s.response.error(f"Failed to retrieve the version of package {package}.")
 				version = Files.load(path).replace("\n","")
 			elif self.packages[package]["library"] not in ["", False, None]:
-				path = f'{self.packages[package]["library"]}/.version'
+				if venv == None:
+					path = f'{self.packages[package]["library"]}/.version'
+				else:
+					path = f'{venv}/lib/{package}/.version'
 				if not Files.exists(path):
 					return dev0s.response.error(f"Failed to retrieve the version of package {package} [{path}].")
 				version = Files.load(path).replace("\n","")
@@ -303,6 +370,8 @@ class PackageManager(object):
 		# handler.
 		return dev0s.response.success(f"Successfully retrieved the {stable_str}{remote_str}version of package {package}.", {
 			"version":version,
+			"stable":stable,
+			"venv":venv,
 		})
 
 		#
@@ -315,6 +384,8 @@ class PackageManager(object):
 		post_install_args="", 
 		# stable or unstable release (bool).
 		stable=True, 
+		# the python venv to install the package in (str, FilePath) (leave None to ignore).
+		venv=None,
 		# the log levenl (int).
 		log_level=dev0s.defaults.options.log_level,
 	):
@@ -322,10 +393,10 @@ class PackageManager(object):
 		if package == "all":
 			c, u = 0, 0
 			for package, info in self.packages.items():
-				response = self.installed(package)
+				response = self.installed(package, stable=stable, venv=venv, log_level=log_level)
 				if not response.success: return response
 				elif response.installed:
-					response = self.update(package, stable=stable)
+					response = self.update(package, stable=stable, venv=venv, log_level=log_level)
 					if response["error"] != None and "already up-to-date" not in response["error"].lower(): return response
 					elif response.success:
 						if "already up-to-date" in response.message: 
@@ -343,27 +414,27 @@ class PackageManager(object):
 		# update package.
 		else:
 			# check & version.
-			response = self.installed(package)
+			response = self.installed(package, stable=stable, venv=venv, log_level=log_level)
 			if not response.success: return response
 			elif not response.installed:
 				return dev0s.response.error(f"Package [{package}] is not installed.")
-			response = self.version(package, log_level=log_level, stable=stable)
+			response = self.version(package, log_level=log_level, stable=stable, venv=venv)
 			if not response.success: return response
-			version = response.version
-			response = self.version(package, remote=True, stable=stable)
+			lversion = response.version
+			response = self.version(package, remote=True, log_level=log_level, stable=stable, venv=venv)
 			if response["error"] != None: 
 				return response
-			remote_version = response.version
-			if Version(version) >= Version(remote_version):
+			rversion = response.version
+			if Version(lversion) >= Version(rversion):
 				if dev0s.defaults.options.log_level >= 1: 
-					dev0s.response.log(f"Package {package} (version: {version}) (remote version: {remote_version}) (stable: {stable}).")
-				return dev0s.response.success(f"Package {package} is already up-to-date ({version}=={remote_version}).")
+					dev0s.response.log(f"Package {package} (version: {lversion}) (remote version: {rversion}) (stable: {stable}).")
+				return dev0s.response.success(f"Package {package} is already up-to-date ({lversion}=={rversion}).")
 			elif dev0s.defaults.options.log_level >= 1: 
-				dev0s.response.log(f"Package {package} is not up-to-date ({version}=={remote_version}) (stable: {stable}).")
+				dev0s.response.log(f"Package {package} is not up-to-date ({lversion}=={rversion}) (stable: {stable}).")
 
-			response = self.install(package, post_install_args=post_install_args, stable=stable)
+			response = self.install(package, post_install_args=post_install_args, stable=stable, venv=venv, log_level=log_level)
 			if response["error"] != None: return response
-			return dev0s.response.success(f"Successfully updated package {package} ({version}) ==> ({remote_version}).")
+			return dev0s.response.success(f"Successfully updated package {package} ({lversion}) ==> ({rversion}).")
 
 	# reloads the remote packages info.
 	def up_to_date(self,
@@ -375,7 +446,7 @@ class PackageManager(object):
 		log_level=dev0s.defaults.options.log_level,
 		# 
 	):
-		response = self.installed(package)
+		response = self.installed(package, log_level=log_level)
 		if not response.success: return response
 		elif not response.installed:
 			return dev0s.response.error(f"Package [{package}] is not installed.")
@@ -395,7 +466,7 @@ class PackageManager(object):
 		})
 
 	# make api.vandenberghinc.com request.
-	def request(self, url="/", data={}, json=True):
+	def request(self, url="/", data={}, json=True, log_level=dev0s.defaults.options.log_level):
 
 		# url.
 		url = f"api.vandenberghinc.com/{gfp.clean(url, remove_first_slash=True, remove_last_slash=True)}/"
