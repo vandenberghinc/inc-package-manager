@@ -137,9 +137,9 @@ class PackageManager(object):
 			#	if log_level >= 0: loader.stop(success=False)
 			#	return dev0s.response.error(f"Failed to install package {package}, error: {response['error']}")	
 
-		# check unkown applicaton.
+		# check unknown applicaton.
 		elif "application/force-download" not in response_object.headers["content-type"]:
-			return dev0s.response.error(f"Failed to install package {package} {version_str}, unkown response application: {response_object.headers['content-type']}")	
+			return dev0s.response.error(f"Failed to install package {package} {version_str}, unknown response application: {response_object.headers['content-type']}")	
 
 		# write out.
 		if log_level >= 0: loader.mark(new_message=f"Writing out package {package} {version_str}")
@@ -413,10 +413,10 @@ class PackageManager(object):
 		if not response.success: raise ValueError(f"Failed to download the vandenberghinc packages, error: {response['error']}")
 		self.packages = response["packages"]
 		response = self.request("/packages/versions/", {"stable":False})
-		if not response.success: raise ValueError(f"Failed to download stable vandenberghinc versions, error: {response['error']}")
+		if not response.success: raise ValueError(f"Failed to download the stable vandenberghinc versions, error: {response['error']}")
 		self.versions["unstable"] = response.versions
 		response = self.request("/packages/versions/", {"stable":True})
-		if not response.success: raise ValueError(f"Failed to download unstable vandenberghinc versions, error: {response['error']}")
+		if not response.success: raise ValueError(f"Failed to download the unstable vandenberghinc versions, error: {response['error']}")
 		self.versions["stable"] = response.versions
 
 	#
