@@ -75,7 +75,7 @@ class CLI(dev0s.cli.CLI):
 		# update a package.
 		elif self.arguments.present('--update'):
 			package = self.arguments.get('--update', required=False, json=dev0s.defaults.options.json)
-			if package == None: package = "all"
+			if package == None or (len(package) >= 1 and package[0] == "-"): package = "all"
 			self.stop(response=package_manager.update(package, stable=not self.arguments.present("--unstable")), json=dev0s.defaults.options.json)
 
 		# get the version of a package.
